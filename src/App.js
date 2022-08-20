@@ -14,10 +14,10 @@ function App() {
       
       <div className='flex flex-row justify-end'>
         <div className='hidden m-4 flex-row justify-center items-center bg-lime-600 rounded-2xl w-36 h-8'>
-          <a className='text-lime-50' href='https://memesave.auth.us-west-2.amazoncognito.com/login?response_type=code&client_id=2si0r1d1pfqai8t91fl1hpd62i&redirect_uri=https://localhost:3000'>sign in</a>
+          <a className='text-lime-50' href='https://memesave.auth.us-west-2.amazoncognito.com/login?response_type=code&client_id=2si0r1d1pfqai8t91fl1hpd62i&redirect_uri=https://memesave.com'>sign in</a>
         </div>
         <div className='m-4'>
-          <a className='text-lime-50' href='https://memesave.auth.us-west-2.amazoncognito.com/login?response_type=code&client_id=2si0r1d1pfqai8t91fl1hpd62i&redirect_uri=https://localhost:3000'>
+          <a className='text-lime-50' href='https://memesave.auth.us-west-2.amazoncognito.com/login?response_type=code&client_id=2si0r1d1pfqai8t91fl1hpd62i&redirect_uri=https://memesave.com'>
             <LoginIcon className='bg-lime-600 text-lime-50 rounded-lg w-16 h-8'></LoginIcon>
           </a>
         </div>
