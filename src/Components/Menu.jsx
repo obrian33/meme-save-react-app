@@ -1,31 +1,44 @@
+import { MenuIcon } from "@heroicons/react/outline";
+import { NavLink, Outlet } from "react-router-dom";
+
 const MenuItem = ({item}) => {
-    return (<div className='h-8 text-sm m-4 text-lime-50'>
-        {item.title}
-    </div>);
+    return (
+        <div className='h-8 text-sm m-4 text-lime-50'>
+            <NavLink className='h-8 text-sm mt-4 mr-4 text-lime-50' to={item.link}>{item.title}</NavLink>
+        </div>
+    );
 };
 
-const Menu = () => {
+const getLoginUrls = (signedIn) => {
+    return !signedIn ? 'https://memesave.auth.us-west-2.amazoncognito.com/login?response_type=token&client_id=2si0r1d1pfqai8t91fl1hpd62i&redirect_uri=http://localhost:3000' 
+    : 'https://memesave.auth.us-west-2.amazoncognito.com/logout?client_id=2si0r1d1pfqai8t91fl1hpd62i&logout_uri=http://localhost:3000';
+}
+
+const Menu = ({setMenuVisibility, menuVisibility, signedIn, setSignedIn}) => {
     let menuItems = [
         {
             title : 'Search',
-            link : '',
+            link : '/Search',
         }, 
         {
             title : 'Meme Collection',
-            link : '',
+            link : '/Collection',
         }, 
         {
             title : 'Add Meme',
-            link : '',
-        }, 
-        {
-            title : 'Login with Google',
-            link : '',
-        }
+            link : '/AddMeme',
+        },
     ];
 
-    return (<div className="bg-lime-800">
-            { menuItems.map((x,idx) => <MenuItem key={idx} item={x}></MenuItem>)}
+    return (<div className="flex bg-lime-800">
+            <MenuIcon onClick={() => { setMenuVisibility(!menuVisibility) }} className={`text-lime-50 rounded-lg w-16 h-8 mt-4 sm:hidden`}></MenuIcon>       
+            <div>
+                { menuItems.map((x,idx) => <MenuItem key={idx} item={x}></MenuItem>)}
+                <div className='h-8 text-sm m-4 text-lime-50'>
+                    <a onClick={() => {localStorage.removeItem('token'); setSignedIn(false); }} href={getLoginUrls(signedIn)}>{!signedIn ? 'Login with Google' : 'Logout'}</a>
+                </div>
+            </div>  
+            
         </div>);
 };
 
