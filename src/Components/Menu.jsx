@@ -31,7 +31,7 @@ const Menu = ({setMenuVisibility, menuVisibility, signedIn, setSignedIn}) => {
     ];
 
     return (<div className="flex bg-lime-800">
-            <MenuIcon onClick={() => { setMenuVisibility(!menuVisibility) }} className={`text-lime-50 rounded-lg w-16 h-8 mt-4 sm:hidden`}></MenuIcon>       
+            <MenuIcon onClick={() => { setMenuVisibility(!menuVisibility) }} className={`text-lime-50 rounded-lg w-16 h-8 mt-4`}></MenuIcon>       
             <div>
                 { menuItems.map((x,idx) => <MenuItem key={idx} item={x}></MenuItem>)}
                 <div className='h-8 text-sm m-4 text-lime-50'>

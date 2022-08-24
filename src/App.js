@@ -39,14 +39,14 @@ function App() {
   }, [])
 
   return (
-    <div className="container flex flex-col mx-auto h-screen bg-lime-100">
+    <div className="flex flex-col mx-auto h-screen bg-lime-100">
       <div className='flex flex-col h-full'>
         <div className={ !menuVisibility ? 'hidden' : 'flex z-10 absolute h-screen'}>
             <Menu menuVisibility={menuVisibility} setMenuVisibility={ setMenuVisibility } signedIn={signedIn} setSignedIn={setSignedIn}></Menu>
         </div>
 
         <div className='flex flex-row justify-start m-4'>
-          <MenuIcon onClick={() => { setMenuVisibility(!menuVisibility) }} className={`bg-lime-600 text-lime-50 rounded-lg w-16 h-8 sm:hidden`}></MenuIcon>         
+          <MenuIcon onClick={() => { setMenuVisibility(!menuVisibility) }} className={`bg-lime-600 text-lime-50 rounded-lg w-16 h-8 `}></MenuIcon>         
         </div>
         <Outlet context={[user]}/>
       </div>
