@@ -1,10 +1,10 @@
 import { MenuIcon } from "@heroicons/react/outline";
 import { NavLink, Outlet } from "react-router-dom";
 
-const MenuItem = ({item}) => {
+const MenuItem = ({item, setMenuVisibility, menuVisibility}) => {
     return (
         <div className='h-8 text-sm m-4 text-lime-50'>
-            <NavLink className='h-8 text-sm mt-4 mr-4 text-lime-50' to={item.link}>{item.title}</NavLink>
+            <NavLink onClick={() => {setMenuVisibility(!menuVisibility)}} className='h-8 text-sm mt-4 mr-4 text-lime-50' to={item.link}>{item.title}</NavLink>
         </div>
     );
 };
@@ -33,7 +33,7 @@ const Menu = ({setMenuVisibility, menuVisibility, signedIn, setSignedIn}) => {
     return (<div className="flex bg-lime-800">
             <MenuIcon onClick={() => { setMenuVisibility(!menuVisibility) }} className={`text-lime-50 rounded-lg w-16 h-8 mt-4`}></MenuIcon>       
             <div>
-                { menuItems.map((x,idx) => <MenuItem key={idx} item={x}></MenuItem>)}
+                { menuItems.map((x,idx) => <MenuItem key={idx} item={x} setMenuVisibility={setMenuVisibility} menuVisibility={menuVisibility}></MenuItem>)}
                 <div className='h-8 text-sm m-4 text-lime-50'>
                     <a onClick={() => {localStorage.removeItem('token'); setSignedIn(false); }} href={getLoginUrls(signedIn)}>{!signedIn ? 'Login with Google' : 'Logout'}</a>
                 </div>
