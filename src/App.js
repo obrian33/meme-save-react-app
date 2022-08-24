@@ -1,36 +1,55 @@
 import { useState, useEffect } from 'react';
-import { LoginIcon } from '@heroicons/react/solid'
+import { MenuIcon } from '@heroicons/react/outline'
+import Menu  from './Components/Menu';
 import './App.css';
+import { Outlet } from 'react-router-dom';
+import jwt_decode from "jwt-decode";
+
+
 
 function App() {
-  const [results, setResults] = useState([]);
+  const [signedIn, setSignedIn] = useState(false);
+  const [user, setUser] = useState('');
+  const [menuVisibility, setMenuVisibility] = useState(false);
+  
 
-  const getSuggestions = (event) => {
-    console.log(event.target.value);
+
+  const isTokenExpired = (expirationTime) => {
+    return Date.now() >= expirationTime * 1000;
   }
 
-  return (
-    <div className="container flex flex-col mx-auto min-h-screen bg-lime-100">
-      
-      <div className='flex flex-row justify-end'>
-        <div className='hidden m-4 flex-row justify-center items-center bg-lime-600 rounded-2xl w-36 h-8'>
-          <a className='text-lime-50' href='https://memesave.auth.us-west-2.amazoncognito.com/login?response_type=code&client_id=2si0r1d1pfqai8t91fl1hpd62i&redirect_uri=https://www.memesave.com'>sign in</a>
-        </div>
-        <div className='m-4'>
-          <a className='text-lime-50' href='https://memesave.auth.us-west-2.amazoncognito.com/login?response_type=code&client_id=2si0r1d1pfqai8t91fl1hpd62i&redirect_uri=https://www.memesave.com'>
-            <LoginIcon className='bg-lime-600 text-lime-50 rounded-lg w-16 h-8'></LoginIcon>
-          </a>
-        </div>
-      </div>
-      
-      
-      <div className='flex m-6 flex-col h-48 justify-evenly items-center'>
-        <div className='text-lg text-lime-600 text-center font-semibold'> Look up your saved memes to send to friends!</div>
-        <input onChange={(e) => getSuggestions(e)} className='p-2 rounded-md w-48 h-6'></input>
-      </div>
-        
+  useEffect(() => {
 
-      
+    let token = localStorage.getItem('token');
+    
+    if(token) { 
+      let decoded = jwt_decode(token);
+      if(isTokenExpired(decoded.exp)) {
+        localStorage.removeItem('token');
+        setUser('');
+        setSignedIn(false);
+      } else {
+        setSignedIn(true);
+        setUser(decoded.email);
+      }
+    } else {
+      setUser('');
+      setSignedIn(false);
+    }
+  }, [])
+
+  return (
+    <div className="flex flex-col mx-auto h-screen bg-lime-100">
+      <div className='flex flex-col h-full'>
+        <div className={ !menuVisibility ? 'hidden' : 'flex z-10 absolute h-screen'}>
+            <Menu menuVisibility={menuVisibility} setMenuVisibility={ setMenuVisibility } signedIn={signedIn} setSignedIn={setSignedIn}></Menu>
+        </div>
+
+        <div className='flex flex-row justify-start m-4'>
+          <MenuIcon onClick={() => { setMenuVisibility(!menuVisibility) }} className={`bg-lime-600 text-lime-50 rounded-lg w-16 h-8 `}></MenuIcon>         
+        </div>
+        <Outlet context={[user]}/>
+      </div>
     </div>
   );
 }
