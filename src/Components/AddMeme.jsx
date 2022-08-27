@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import jwt_decode from "jwt-decode";
+import SuccessfullyAddedMemeModal from './SuccessfullyAddedMemeModal';
 
 const AddMeme = () => {
     const [selectedFile, setSelectedFile] = useState();
@@ -7,6 +8,9 @@ const AddMeme = () => {
     const [memeKey, setMemeKey] = useState('');
     const [memeGroup, setMemeGroup] = useState('');
     const [validationError, setValidationError] = useState(false);
+    const [isSuccessful, setSuccessfullyAdded] = useState(false);
+    const [modalText, setModalText] = useState('');
+    const [modalTitle, setModalTitle] = useState('');
 
     const changeHandler = (event) => {
         setValidationError(false);
@@ -47,9 +51,9 @@ const AddMeme = () => {
 
         let split = token.split('&');
         let idtoken = split[0].split('=')[1];
-
+        
         try {
-            let res = await fetch(
+            let response = await fetch(
                 'https://obv030u051.execute-api.us-west-2.amazonaws.com/prod/addmeme',
                 {
                     method: 'POST',
@@ -60,7 +64,24 @@ const AddMeme = () => {
                     },
                 }
             );
-            console.log(res);
+
+            if(response.ok) {
+                response.json().then((result) => {
+                    console.log(result);
+                    setSuccessfullyAdded(true);
+                    setModalText(result.result);
+                    setModalTitle('Meme Successfully saved!');
+                });
+            } else {
+                response.json().then((result) => {
+                    console.log(result);
+                    setSuccessfullyAdded(true);
+                    setModalText(result.message);
+                    setModalTitle('Meme unsuccessfully saved!');
+                });
+            }
+            
+            
         } 
         catch(err) {
             console.log(err);
@@ -87,6 +108,8 @@ const AddMeme = () => {
                 <input type="file" className='text-sm w-56' onChange={(e) => changeHandler(e)}></input>
                 <button className='bg-lime-700 text-lime-50 rounded-lg w-56 h-8' onClick={(e) => handleSubmission(e)}>Upload meme!</button> 
                 
+                <SuccessfullyAddedMemeModal isOpen={isSuccessful} setIsOpen={setSuccessfullyAdded} modalText={modalText} modalTitle={modalTitle}></SuccessfullyAddedMemeModal>
+
             </div>
         </div>
     );
