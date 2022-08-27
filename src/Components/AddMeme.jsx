@@ -1,63 +1,77 @@
 import React, { useState } from 'react';
-
+import jwt_decode from "jwt-decode";
 
 const AddMeme = () => {
     const [selectedFile, setSelectedFile] = useState();
     const [isFilePicked, setIsFilePicked] = useState(false);
     const [memeKey, setMemeKey] = useState('');
     const [memeGroup, setMemeGroup] = useState('');
+    const [validationError, setValidationError] = useState(false);
 
     const changeHandler = (event) => {
+        setValidationError(false);
 		setSelectedFile(event.target.files[0]);
         setIsFilePicked(true);
 	};
 
     const setMemeKeyInput = (event) => {
+        setValidationError(false);
         setMemeKey(event.target.value);
     }
 
     const setMemeGroupInput = (event) => {
+        setValidationError(false);
         setMemeGroup(event.target.value);
     }
 
-	const handleSubmission = (event) => {
+    const isValid = () => {
+        return isFilePicked && memeGroup && memeKey;
+    }
+
+	const handleSubmission = async (event) => {
         event.preventDefault();
 
-        if(!isFilePicked) {
-            return null;
+        if(!isValid()) {
+            setValidationError(true);
+            return;
         }
-
-        if(!memeGroup) {
-            return null;
-        }
-
-        if(!memeKey) {
-            return null;
-        }
-
         
-		// formData.append('File', selectedFile);
+        let token = localStorage.getItem('token');
+        let decoded = jwt_decode(token);
+        let body = {
+            memekey : memeKey,
+            memegroup : memeGroup,
+            email : decoded.email,
+            s3key : selectedFile.name
+        };
 
-		// fetch(
-		// 	'https://obv030u051.execute-api.us-west-2.amazonaws.com/prod/addmeme',
-		// 	{
-		// 		method: 'POST',
-		// 		body: formData,
-		// 	}
-		// )
-        // .then((response) => response.json())
-        // .then((result) => {
-        //     console.log('Success:', result);
-        // })
-        // .catch((error) => {
-        //     console.error('Error:', error);
-        // });
+        let split = token.split('&');
+        let idtoken = split[0].split('=')[1];
+
+        try {
+            let res = await fetch(
+                'https://obv030u051.execute-api.us-west-2.amazonaws.com/prod/addmeme',
+                {
+                    method: 'POST',
+                    body: JSON.stringify(body),
+                    mode : 'cors',
+                    headers : {
+                        'Authorization' : idtoken, 
+                    },
+                }
+            );
+            console.log(res);
+        } 
+        catch(err) {
+            console.log(err);
+        }
 	    
 	};
 
     return (
         <div className='flex flex-col m-4 h-full'>
             <div className='flex flex-col justify-evenly items-center h-72'>
+                {validationError && <div>Error! </div>}
                 <div className='flex h-10 text-3xl text-lime-600'>
                     Add a new meme!
                 </div>
