@@ -52,7 +52,34 @@ const AddMeme = () => {
         let split = token.split('&');
         let idtoken = split[0].split('=')[1];
         
+        let formData = new FormData();
+        
+        formData.append('File', selectedFile);
+
+        
         try {
+
+            let upload = await fetch(`https://obv030u051.execute-api.us-west-2.amazonaws.com/prod/meme-save/${selectedFile.name}`,
+            {
+                method: 'PUT',
+                body: formData,
+                mode : 'cors',
+                headers : {
+                    'Authorization' : idtoken,
+                    'Content-Type' : selectedFile.type
+                }
+            });
+
+            if(upload.ok) {
+                upload.json().then((res) => {
+                    console.log(res);
+                });
+            } else {
+                upload.json().then((res) => {
+                    console.log(res);
+                });
+            }
+
             let response = await fetch(
                 'https://obv030u051.execute-api.us-west-2.amazonaws.com/prod/addmeme',
                 {
@@ -60,8 +87,8 @@ const AddMeme = () => {
                     body: JSON.stringify(body),
                     mode : 'cors',
                     headers : {
-                        'Authorization' : idtoken, 
-                    },
+                        'Authorization' : idtoken,
+                    }
                 }
             );
 
