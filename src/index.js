@@ -13,6 +13,7 @@ import {
   Route,
 } from "react-router-dom";
 import Search from './Components/Search';
+import { isRedirectedLoginFlow, retrieveAccessCodeFromLoginFlow, getTokens } from './utilities/Login';
 
 const history = createBrowserHistory();
 
@@ -22,11 +23,11 @@ if (app) {
   if (path) {
     history.replace(path);
   } else {
-    if(window.location.hash) {
-      let hash = window.location.hash.substring(1); //Puts hash in variable, and removes the # character
-      hash = hash.substring(hash.indexOf('id_token'));
-      localStorage.setItem('token', hash);
-    } 
+
+    if(isRedirectedLoginFlow(location)) {
+      let accessCode = retrieveAccessCodeFromLoginFlow(location);
+      localStorage.setItem('code', accessCode);
+    }
     history.replace('Search');
   }
 }

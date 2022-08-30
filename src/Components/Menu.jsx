@@ -10,7 +10,7 @@ const MenuItem = ({item, setMenuVisibility, menuVisibility}) => {
 };
 
 const getLoginUrls = (signedIn) => {
-    return !signedIn ? 'https://memesave.auth.us-west-2.amazoncognito.com/login?response_type=token&client_id=2si0r1d1pfqai8t91fl1hpd62i&redirect_uri=http://localhost:3000' 
+    return !signedIn ? 'https://memesave.auth.us-west-2.amazoncognito.com/login?response_type=code&client_id=2si0r1d1pfqai8t91fl1hpd62i&redirect_uri=http://localhost:3000' 
     : 'https://memesave.auth.us-west-2.amazoncognito.com/logout?client_id=2si0r1d1pfqai8t91fl1hpd62i&logout_uri=http://localhost:3000';
 }
 
@@ -35,7 +35,7 @@ const Menu = ({setMenuVisibility, menuVisibility, signedIn, setSignedIn}) => {
             <div>
                 { menuItems.map((x,idx) => <MenuItem key={idx} item={x} setMenuVisibility={setMenuVisibility} menuVisibility={menuVisibility}></MenuItem>)}
                 <div className='h-8 text-sm m-4 text-lime-50'>
-                    <a onClick={() => {localStorage.removeItem('token'); setSignedIn(false); }} href={getLoginUrls(signedIn)}>{!signedIn ? 'Login with Google' : 'Logout'}</a>
+                    <a onClick={() => { localStorage.clear(); setSignedIn(false); }} href={getLoginUrls(signedIn)}>{!signedIn ? 'Login with Google' : 'Logout'}</a>
                 </div>
             </div>  
             
