@@ -4,39 +4,77 @@ import Menu  from './Components/Menu';
 import './App.css';
 import { Outlet } from 'react-router-dom';
 import jwt_decode from "jwt-decode";
-
+import { getParsedJWTToken, getUserToken } from './utilities/TokenHandling';
+import { isTokenExpired, getRefreshedCredentials, setIDTokenFromRefreshResponse } from './utilities/TokenHandling'
+import { getTokens } from './utilities/Login';
 
 
 function App() {
   const [signedIn, setSignedIn] = useState(false);
   const [user, setUser] = useState('');
   const [menuVisibility, setMenuVisibility] = useState(false);
-  
 
+  const clearAllUserCredentials = () => {
+    setUser('');
+    setSignedIn(false);
+    localStorage.clear();
+  }
 
-  const isTokenExpired = (expirationTime) => {
-    return Date.now() >= expirationTime * 1000;
+  const setUserCredentials = (response) => {
+    if(response.ok) {
+      setIDTokenFromRefreshResponse(response);
+      setSignedIn(true);
+    } else {
+      clearAllUserCredentials();
+    }
   }
 
   useEffect(() => {
 
     let token = localStorage.getItem('token');
+    let accessCode = localStorage.getItem('code');
     
-    if(token) { 
-      let decoded = jwt_decode(token);
-      if(isTokenExpired(decoded.exp)) {
-        localStorage.removeItem('token');
-        setUser('');
-        setSignedIn(false);
+    if(token && token !== '{}') { 
+      
+      let parsedToken = getParsedJWTToken(token);
+      let parsedIDToken = jwt_decode(parsedToken.id_token)
+      
+      if(isTokenExpired(parsedIDToken.auth_time, parsedIDToken.exp)) {
+
+        if(parsedToken.refresh_token) {
+          getRefreshedCredentials(parsedToken.refresh_token)
+          .then((res) => {
+            setUserCredentials(res);
+          })
+          .catch((err) => {
+            clearAllUserCredentials();
+          });
+        } else {
+          clearAllUserCredentials();
+        }
       } else {
         setSignedIn(true);
-        setUser(decoded.email);
       }
+    } else if(accessCode) {
+      let res = getTokens(accessCode);
+
+      res.then((res) => {
+        
+        res.json().then((result) => {
+          console.log(result);
+          localStorage.setItem('token', JSON.stringify(result));
+          setSignedIn(true);
+        })
+        
+      });
+      localStorage.removeItem('code');
     } else {
-      setUser('');
-      setSignedIn(false);
+      clearAllUserCredentials()
     }
-  }, [])
+
+  }, []);
+  
+
 
   return (
     <div className="flex flex-col mx-auto h-screen bg-lime-100">

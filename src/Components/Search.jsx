@@ -1,5 +1,3 @@
-import { useOutletContext } from "react-router-dom";
-
 
 const Search = () => {
     const getSuggestions = (event) => {
