@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import jwt_decode from "jwt-decode";
 import SuccessfullyAddedMemeModal from './SuccessfullyAddedMemeModal';
+import { getParsedJWTToken, refreshTokenAPICallUnauthorized, setIDTokenFromRefreshResponse, getUserToken } from '../utilities/TokenHandling'
+import { uploadMemeDataToDynamoDB } from "../api/AddMemeAPICalls/PostCalls";
+import { uploadMemeToS3 } from "../api/AddMemeAPICalls/PutCalls";
+import { v4 as uuidv4 } from 'uuid';
 
 const AddMeme = () => {
     const [selectedFile, setSelectedFile] = useState();
@@ -11,6 +15,8 @@ const AddMeme = () => {
     const [isSuccessful, setSuccessfullyAdded] = useState(false);
     const [modalText, setModalText] = useState('');
     const [modalTitle, setModalTitle] = useState('');
+    const [hasRetried, setHasRetried] = useState(false);
+    const [hasRetriedDynamoDB, setHasRetriedDynamoDB] = useState(false);
 
     const changeHandler = (event) => {
         setValidationError(false);
@@ -32,6 +38,73 @@ const AddMeme = () => {
         return isFilePicked && memeGroup && memeKey;
     }
 
+    const failedToAddMeme = () => {
+        setSuccessfullyAdded(true);
+        setModalTitle('Meme unsuccessfully saved!');
+    }
+
+    const suceededToAddMeme = () => {
+        setSuccessfullyAdded(true);
+        setModalTitle('Meme Successfully saved!');
+    }
+
+    const dynamoDBWebCall = async (token, body) => {
+        let dbResponse = await uploadMemeDataToDynamoDB(token.id_token, body);
+
+        if(dbResponse.ok) {
+            setHasRetriedDynamoDB(false);
+            let result = await dbResponse.json();
+            suceededToAddMeme();
+            setModalText(result.result);
+        } else {            
+            if(dbResponse.status === 401 && !hasRetriedDynamoDB) {
+                setHasRetriedDynamoDB(true);
+                let refreshResponse = await refreshTokenAPICallUnauthorized(dbResponse);
+                if(refreshResponse.status === 200) {
+                    setIDTokenFromRefreshResponse(refreshResponse);
+                    let parsedToken = getUserToken();
+                    await dynamoDBWebCall(parsedToken, body)
+                    
+                } else {
+                    failedToAddMeme();
+                    // delete s3 added meme
+                }
+            } else {
+                failedToAddMeme();
+                // delete s3 added meme.
+            }
+        }
+    }
+
+    const addMemeWebCalls = async (token, selectedFile, filename, body) => {
+        let s3Response = await uploadMemeToS3(token.id_token, selectedFile, selectedFile.type, filename);
+            
+        if(s3Response.ok) {
+            setHasRetried(false);
+            await dynamoDBWebCall(token, body);
+        } else {
+            if(s3Response.status === 401 && !hasRetried) {
+                setHasRetried(true);
+                let refreshResponse = await refreshTokenAPICallUnauthorized(s3Response);
+
+                let x = await refreshResponse.json();
+                console.log(x);
+                if(refreshResponse.status === 200) {
+                    setIDTokenFromRefreshResponse(refreshResponse);
+                    let parsedToken = getUserToken();
+                    await addMemeWebCalls(parsedToken, selectedFile, filename, body);
+                    
+                } else {
+                    failedToAddMeme();
+                }
+            } else {
+                failedToAddMeme();
+
+            }
+
+        }
+    }
+
 	const handleSubmission = async (event) => {
         event.preventDefault();
 
@@ -40,75 +113,25 @@ const AddMeme = () => {
             return;
         }
         
-        let token = localStorage.getItem('token');
-        let decoded = jwt_decode(token);
+        let token = getUserToken();
+        if(!token) {
+            alert('YOU MUST BE SIGNED IN TO ADD MEMES');
+            return;
+        }
+        let decodedIdToken = jwt_decode(token.id_token);
+        let filename = `${uuidv4()}.png`;
         let body = {
             memekey : memeKey,
             memegroup : memeGroup,
-            email : decoded.email,
-            s3key : selectedFile.name
+            email : decodedIdToken.email,
+            s3key : filename
         };
 
-        let split = token.split('&');
-        let idtoken = split[0].split('=')[1];
-        
-        let formData = new FormData();
-        
-        formData.append('File', selectedFile);
-
-        
         try {
 
-            let upload = await fetch(`https://obv030u051.execute-api.us-west-2.amazonaws.com/prod/meme-save/${selectedFile.name}`,
-            {
-                method: 'PUT',
-                body: formData,
-                mode : 'cors',
-                headers : {
-                    'Authorization' : idtoken,
-                    'Content-Type' : selectedFile.type
-                }
-            });
+            await addMemeWebCalls(token, selectedFile, filename, body)
 
-            if(upload.ok) {
-                upload.json().then((res) => {
-                    console.log(res);
-                });
-            } else {
-                upload.json().then((res) => {
-                    console.log(res);
-                });
-            }
 
-            let response = await fetch(
-                'https://obv030u051.execute-api.us-west-2.amazonaws.com/prod/addmeme',
-                {
-                    method: 'POST',
-                    body: JSON.stringify(body),
-                    mode : 'cors',
-                    headers : {
-                        'Authorization' : idtoken,
-                    }
-                }
-            );
-
-            if(response.ok) {
-                response.json().then((result) => {
-                    console.log(result);
-                    setSuccessfullyAdded(true);
-                    setModalText(result.result);
-                    setModalTitle('Meme Successfully saved!');
-                });
-            } else {
-                response.json().then((result) => {
-                    console.log(result);
-                    setSuccessfullyAdded(true);
-                    setModalText(result.message);
-                    setModalTitle('Meme unsuccessfully saved!');
-                });
-            }
-            
-            
         } 
         catch(err) {
             console.log(err);
