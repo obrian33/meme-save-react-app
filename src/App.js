@@ -78,7 +78,7 @@ function App() {
 
   return (
     <div className="flex flex-col mx-auto h-screen bg-lime-100">
-      <div className='flex flex-col h-full'>
+      <div className='flex flex-col'>
         <div className={ !menuVisibility ? 'hidden' : 'flex z-20 absolute h-screen'}>
             <Menu menuVisibility={menuVisibility} setMenuVisibility={ setMenuVisibility } signedIn={signedIn} setSignedIn={setSignedIn}></Menu>
         </div>
