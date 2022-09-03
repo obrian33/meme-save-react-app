@@ -19,8 +19,6 @@ const Search = () => {
         } else {
             setSearchSuggestions([]);
         }
-        
-
     }
 
     const getMemes = async (phrase) => {
