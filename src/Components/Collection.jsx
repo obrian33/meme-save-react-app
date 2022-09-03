@@ -4,10 +4,17 @@ import { getMemeGroups, getMemesPerGroup } from "../api/MemeCollectionAPICalls/G
 import { Listbox, Transition } from "@headlessui/react";
 import jwt_decode from 'jwt-decode';
 import { CheckIcon, SelectorIcon } from '@heroicons/react/solid'
+import { PencilIcon, TrashIcon } from "@heroicons/react/outline";
 
 const Meme = ({src}) => {
     return (
-        <img className="w-28 m-2" src={`https://meme-save.s3.us-west-2.amazonaws.com/${src}`} alt='3'></img>
+        <div className="flex flex-col">
+            <img className="w-28 m-2" src={`https://meme-save.s3.us-west-2.amazonaws.com/${src}`} alt='3'></img>
+            <div className="flex justify-around">
+                <PencilIcon className="w-5"></PencilIcon>
+                <TrashIcon className="w-5"></TrashIcon>
+            </div>
+        </div>
     );
 }
 
