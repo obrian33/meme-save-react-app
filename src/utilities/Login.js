@@ -8,14 +8,14 @@ const getTokenLoginFlowBody = (accessCode) => {
     return new URLSearchParams({
         'grant_type' : 'authorization_code',
         'code' : accessCode,
-        'redirect_uri' : 'http://localhost:3000'
+        'redirect_uri' : 'http://localhost:3000',
+        'client_id' : '5s6nm5boso4h0p4de46idhsm20'
     });
 }
 
 const getTokenLoginFlowHeaders = () => {
     return {
-        'Content-Type' : 'application/x-www-form-urlencoded',
-        'Authorization' : 'Basic MnNpMHIxZDFwZnFhaTh0OTFmbDFocGQ2Mmk6dWtvZjcxYW1lZnFnaGhkNzBkZzZtOW01OGg5dDliMHJjMGJvODNnYWlwN3ZvanM0Ymgz' 
+        'Content-Type' : 'application/x-www-form-urlencoded'
     };
 }
 
@@ -49,7 +49,8 @@ const getRefreshTokenHeaders = () => {
 const getRefreshTokenBody = (refreshToken) => {
     return new URLSearchParams({
         'grant_type' : 'refresh_token',
-        'refresh_token' : refreshToken
+        'refresh_token' : refreshToken,
+        'client_id' : '5s6nm5boso4h0p4de46idhsm20'
     });
 }
 
