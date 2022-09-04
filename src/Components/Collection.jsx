@@ -5,17 +5,34 @@ import { Listbox, Transition } from "@headlessui/react";
 import jwt_decode from 'jwt-decode';
 import { CheckIcon, SelectorIcon } from '@heroicons/react/solid'
 import { PencilIcon, TrashIcon } from "@heroicons/react/outline";
+import { deleteDynamoDBEntry, deleteS3Meme } from "../api/MemeCollectionAPICalls/DeleteCalls";
 
-const Meme = ({src}) => {
+const Meme = ({src, memekey, setMemes, memes}) => {
     return (
         <div className="flex flex-col">
             <img className="w-28 m-2" src={`https://meme-save.s3.us-west-2.amazonaws.com/${src}`} alt='3'></img>
             <div className="flex justify-around">
                 <PencilIcon className="w-5"></PencilIcon>
-                <TrashIcon className="w-5"></TrashIcon>
+                <TrashIcon onClick={() => DeleteMemeWebCalls(memekey, src, setMemes, memes)} className="w-5"></TrashIcon>
             </div>
         </div>
     );
+}
+
+const DeleteMemeWebCalls = async (memekey, s3key, setMemes, memes) => {
+    let token = getUserToken();
+    let decodedIDToken = jwt_decode(token.id_token);
+    let deleteDynamoDBEntryResponse = await deleteDynamoDBEntry(token.id_token, decodedIDToken.email, memekey);
+
+    if(deleteDynamoDBEntryResponse.ok) {
+        let deleteS3Response = await deleteS3Meme(token.id_token, s3key);
+        if(deleteS3Response.ok) {
+            let memeIndex = memes.findIndex(x => x.memekey === memekey);
+            memes.splice(memeIndex, 1);
+            let newMemes = [...memes];
+            setMemes(newMemes);
+        }
+    }
 }
 
 const Collection = () => {
@@ -114,7 +131,7 @@ const Collection = () => {
                 </Listbox>
                 <div className="flex justify-center overflow-y-auto flex-wrap mt-5 h-48">
                 {memes.map((x, idx) => {
-                    return <Meme key={idx} src={x.s3key}></Meme>
+                    return <Meme key={idx} src={x.s3key} memekey={x.memekey} setMemes={setMemes} memes={memes}></Meme>
                 } )}
                 </div>
             </div>
