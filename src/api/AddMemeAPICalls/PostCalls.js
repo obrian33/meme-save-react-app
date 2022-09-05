@@ -13,3 +13,12 @@ export const uploadMemeDataToDynamoDB = async (idtoken, body) => {
 
     return response;
 }
+
+export const AddMemeWebCallBody = (memekey, memeGroup, email, filename) => {
+    return {
+        memekey : memekey,
+        memegroup : memeGroup,
+        email : email,
+        s3key : filename
+    };
+}
