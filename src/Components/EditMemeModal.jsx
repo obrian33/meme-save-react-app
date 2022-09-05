@@ -188,7 +188,7 @@ export const EditMemeModal = ({showEditModal, setShowEditModal, meme, setMemes, 
                       </div>
                       <div className="flex my-2">
                         <div className='text-sm mr-1'>
-                            New Image: <img className="w-28 m-2" src={`https://meme-save.s3.us-west-2.amazonaws.com/${meme.s3key}`} alt='3'></img>
+                            New Image: <img className="w-28 m-2" src={`https://meme-save.s3.us-west-2.amazonaws.com/${meme.s3key}?${new Date().getTime()}`} alt='3'></img>
                         </div>
                         <input type="file" className='text-sm w-56'  onChange={(e) => setSelectedFile(e.target.files[0]) }></input>
                       </div>

@@ -11,7 +11,7 @@ import { EditMemeModal } from "./EditMemeModal";
 const Meme = ({src, memekey, setMemes, memes, showEditModal, setShowEditModal, setSelectedMeme, meme, setNewMemeGroup, setNewMemeKey }) => {
     return (
         <div className="flex flex-col">
-            <img className="w-28 m-2" src={`https://meme-save.s3.us-west-2.amazonaws.com/${src}`} alt='3'></img>
+            <img className="w-28 m-2" src={`https://meme-save.s3.us-west-2.amazonaws.com/${src}?${new Date().getTime()}`} alt='3'></img>
             <div className="flex justify-around">
                 <PencilIcon onClick={() => { setNewMemeGroup(meme.memegroup); setNewMemeKey(meme.memekey); setSelectedMeme(meme); setShowEditModal(!showEditModal); } } className="w-5"></PencilIcon>
                 <TrashIcon onClick={() => DeleteMemeWebCalls(memekey, src, setMemes, memes)} className="w-5"></TrashIcon>
