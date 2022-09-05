@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import jwt_decode from "jwt-decode";
 import SuccessfullyAddedMemeModal from './SuccessfullyAddedMemeModal';
-import { getParsedJWTToken, refreshTokenAPICallUnauthorized, setIDTokenFromRefreshResponse, getUserToken } from '../utilities/TokenHandling'
-import { uploadMemeDataToDynamoDB } from "../api/AddMemeAPICalls/PostCalls";
+import { refreshTokenAPICallUnauthorized, setIDTokenFromRefreshResponse, getUserToken } from '../utilities/TokenHandling'
+import { uploadMemeDataToDynamoDB, AddMemeWebCallBody } from "../api/AddMemeAPICalls/PostCalls";
 import { uploadMemeToS3 } from "../api/AddMemeAPICalls/PutCalls";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -120,12 +120,7 @@ const AddMeme = () => {
         }
         let decodedIdToken = jwt_decode(token.id_token);
         let filename = `${uuidv4()}.png`;
-        let body = {
-            memekey : memeKey,
-            memegroup : memeGroup,
-            email : decodedIdToken.email,
-            s3key : filename
-        };
+        let body = AddMemeWebCallBody(memeKey, memeGroup, decodedIdToken.email, filename);
 
         try {
 
