@@ -6,13 +6,14 @@ import jwt_decode from 'jwt-decode';
 import { CheckIcon, SelectorIcon } from '@heroicons/react/solid'
 import { PencilIcon, TrashIcon } from "@heroicons/react/outline";
 import { deleteDynamoDBEntry, deleteS3Meme } from "../api/MemeCollectionAPICalls/DeleteCalls";
+import { EditMemeModal } from "./EditMemeModal";
 
-const Meme = ({src, memekey, setMemes, memes}) => {
+const Meme = ({src, memekey, setMemes, memes, showEditModal, setShowEditModal, setSelectedMeme, meme, setNewMemeGroup, setNewMemeKey }) => {
     return (
         <div className="flex flex-col">
             <img className="w-28 m-2" src={`https://meme-save.s3.us-west-2.amazonaws.com/${src}`} alt='3'></img>
             <div className="flex justify-around">
-                <PencilIcon className="w-5"></PencilIcon>
+                <PencilIcon onClick={() => { setNewMemeGroup(meme.memegroup); setNewMemeKey(meme.memekey); setSelectedMeme(meme); setShowEditModal(!showEditModal); } } className="w-5"></PencilIcon>
                 <TrashIcon onClick={() => DeleteMemeWebCalls(memekey, src, setMemes, memes)} className="w-5"></TrashIcon>
             </div>
         </div>
@@ -37,8 +38,12 @@ const DeleteMemeWebCalls = async (memekey, s3key, setMemes, memes) => {
 
 const Collection = () => {
     const [memeGroups, setMemeGroups] = useState([]);
-    const [selected, setSelected] = useState('');
+    const [selected, setSelected] = useState();
     const [memes, setMemes] = useState([]);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [selectedMeme, setSelectedMeme] = useState({});
+    const [newMemekey, setNewMemeKey] = useState('');
+    const [newMemegroup, setNewMemeGroup] = useState('');
 
     useEffect(() => {
         
@@ -131,8 +136,10 @@ const Collection = () => {
                 </Listbox>
                 <div className="flex justify-center overflow-y-auto flex-wrap mt-5 h-48">
                 {memes.map((x, idx) => {
-                    return <Meme key={idx} src={x.s3key} memekey={x.memekey} setMemes={setMemes} memes={memes}></Meme>
+                    return <Meme key={idx} src={x.s3key} memekey={x.memekey} setMemes={setMemes} memes={memes} showEditModal={showEditModal} setShowEditModal={setShowEditModal} setSelectedMeme={setSelectedMeme} meme={x} setNewMemeGroup={setNewMemeGroup} setNewMemeKey={setNewMemeKey}></Meme>
                 } )}
+
+                <EditMemeModal showEditModal={showEditModal} setShowEditModal={setShowEditModal} meme={selectedMeme} setMemes={setMemes} memes={memes} newMemekey={newMemekey} setNewMemeKey={setNewMemeKey} newMemegroup={newMemegroup} setNewMemeGroup={setNewMemeGroup}></EditMemeModal>
                 </div>
             </div>
         </div>
