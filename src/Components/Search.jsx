@@ -5,7 +5,7 @@ import jwt_decode from 'jwt-decode';
 import { copyImage } from "../api/SearchAPICalls/GetCalls";
 
 const SearchResult = ({ imgsrc, searchPhrase }) => {
-    return <img onClick={() => copyImage(getUserToken().id_token, imgsrc)} className="w-28 m-2" src={`https://meme-save.s3.us-west-2.amazonaws.com/${imgsrc}`} alt={searchPhrase}></img>
+    return <img onClick={() => ('.png'.match(/png/g) ? copyImage(getUserToken().id_token, imgsrc) : () => {}) } className="w-28 m-2" src={`https://meme-save.s3.us-west-2.amazonaws.com/${imgsrc}`} alt={searchPhrase}></img>
 }
 
 const Search = () => {

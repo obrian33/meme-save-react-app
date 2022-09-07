@@ -18,6 +18,25 @@ const AddMeme = () => {
     const [hasRetried, setHasRetried] = useState(false);
     const [hasRetriedDynamoDB, setHasRetriedDynamoDB] = useState(false);
 
+    const createFileName = (imageFile) => {
+        return `${uuidv4()}.${getFileTypeExtension(imageFile)}`;
+    }
+
+    const getFileTypeExtension = (file) => {
+        if(file.type === 'image/jpeg') {
+            return 'jpg';
+        }
+
+        if(file.type === 'image/gif') {
+            return 'gif';
+        }
+
+        if(file.type === 'image/heic') {
+            return 'heic';
+        }
+
+        return 'png';
+    }
     const changeHandler = (event) => {
         setValidationError(false);
 		setSelectedFile(event.target.files[0]);
@@ -119,7 +138,7 @@ const AddMeme = () => {
             return;
         }
         let decodedIdToken = jwt_decode(token.id_token);
-        let filename = `${uuidv4()}.png`;
+        let filename = createFileName(selectedFile);
         let body = AddMemeWebCallBody(memeKey, memeGroup, decodedIdToken.email, filename);
 
         try {
