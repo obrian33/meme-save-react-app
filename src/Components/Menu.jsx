@@ -10,8 +10,8 @@ const MenuItem = ({item, setMenuVisibility, menuVisibility}) => {
 };
 
 const getLoginUrls = (signedIn) => {
-    return !signedIn ? 'https://memesave.auth.us-west-2.amazoncognito.com/login?response_type=code&client_id=5s6nm5boso4h0p4de46idhsm20&redirect_uri=http://localhost:3000' 
-    : 'https://memesave.auth.us-west-2.amazoncognito.com/logout?client_id=5s6nm5boso4h0p4de46idhsm20&logout_uri=http://localhost:3000';
+    return !signedIn ? 'https://memesave.auth.us-west-2.amazoncognito.com/login?response_type=code&client_id=5s6nm5boso4h0p4de46idhsm20&redirect_uri=https://www.memesave.com' 
+    : 'https://memesave.auth.us-west-2.amazoncognito.com/logout?client_id=5s6nm5boso4h0p4de46idhsm20&logout_uri=https://www.memesave.com';
 }
 
 const Menu = ({setMenuVisibility, menuVisibility, signedIn, setSignedIn}) => {

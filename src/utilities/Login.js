@@ -8,7 +8,7 @@ const getTokenLoginFlowBody = (accessCode) => {
     return new URLSearchParams({
         'grant_type' : 'authorization_code',
         'code' : accessCode,
-        'redirect_uri' : 'http://localhost:3000',
+        'redirect_uri' : 'https://www.memesave.com',
         'client_id' : '5s6nm5boso4h0p4de46idhsm20'
     });
 }

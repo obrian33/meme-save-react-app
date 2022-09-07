@@ -19,16 +19,16 @@ const history = createBrowserHistory();
 
 let app = document.getElementById('root');
 if (app) {
-  const path = (/#!(\/.*)$/.exec(location.hash) || [])[1];
-  if (path) {
-    history.replace(path);
-  } else {
 
-    if(isRedirectedLoginFlow(location)) {
-      let accessCode = retrieveAccessCodeFromLoginFlow(location);
-      localStorage.setItem('code', accessCode);
-    }
+  if(isRedirectedLoginFlow(location)) {
+    let accessCode = retrieveAccessCodeFromLoginFlow(location);
+    localStorage.setItem('code', accessCode);
     history.replace('Search');
+  } else {
+    const path = (/\/(.*)$/.exec(location.pathname) || [])[1];
+    if (path === '') {
+      history.replace('Search');
+    }
   }
 }
 
