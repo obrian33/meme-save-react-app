@@ -8,8 +8,8 @@ const getTokenLoginFlowBody = (accessCode) => {
     return new URLSearchParams({
         'grant_type' : 'authorization_code',
         'code' : accessCode,
-        'redirect_uri' : 'https://www.memesave.com',
-        'client_id' : '5s6nm5boso4h0p4de46idhsm20'
+        'redirect_uri' : `${ process.env.NODE_ENV === 'development' ? process.env.REACT_APP_USER_POOL_REDIRECT_DEV : process.env.REACT_APP_USER_POOL_REDIRECT_PROD }`,
+        'client_id' : `${ process.env.NODE_ENV === 'development' ? process.env.REACT_APP_USER_POOL_DEV : process.env.REACT_APP_USER_POOL_PROD }`
     });
 }
 
@@ -50,7 +50,7 @@ const getRefreshTokenBody = (refreshToken) => {
     return new URLSearchParams({
         'grant_type' : 'refresh_token',
         'refresh_token' : refreshToken,
-        'client_id' : '5s6nm5boso4h0p4de46idhsm20'
+        'client_id' : `${ process.env.NODE_ENV === 'development' ? process.env.REACT_APP_USER_POOL_DEV : process.env.REACT_APP_USER_POOL_PROD }`
     });
 }
 
