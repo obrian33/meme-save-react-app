@@ -154,28 +154,30 @@ const AddMeme = () => {
 	};
 
     return (
-        <div className='flex flex-col m-4 h-full'>
-            <div className='flex flex-col justify-evenly items-center h-72'>
-                {validationError && <div>Error! </div>}
-                <div className='flex h-10 text-3xl text-lime-600'>
-                    Add a new meme!
-                </div>
-                <div className='flex flex-row justify-between w-72'>
-                    <div className='text-sm mr-1'>Meme Key:</div>
-                    <input required onChange={(e) => setMemeKeyInput(e)} className='p-2 rounded-md h-6'></input>
-                </div>
-                <div className='flex flex-row justify-between w-72'>
-                    <div className='text-sm mr-1'>Meme Group:</div>
-                    <input required onChange={(e) => setMemeGroupInput(e)} className='p-2 rounded-md h-6'></input>
-                </div>
+        <form onSubmit={(e) => handleSubmission(e)}>
+            <div className='flex flex-col m-4 h-full'>
+                <div className='flex flex-col justify-evenly items-center h-72'>
+                    {validationError && <div>Error! </div>}
+                    <div className='flex h-10 text-3xl text-lime-600'>
+                        Add a new meme!
+                    </div>
+                    <div className='flex flex-row justify-between w-72'>
+                        <div className='text-sm mr-1'>Meme Key:</div>
+                        <input placeholder='Key must be unique!' required onChange={(e) => setMemeKeyInput(e)} className='required:border-red-500 border-2 text-sm p-2 rounded-md h-6'></input>
+                    </div>
+                    <div className='flex flex-row justify-between w-72'>
+                        <div className='text-sm mr-1'>Meme Group:</div>
+                        <input placeholder='Select a group!' required onChange={(e) => setMemeGroupInput(e)} className='text-sm p-2 rounded-md h-6'></input>
+                    </div>
 
-                <input type="file" className='text-sm w-56' onChange={(e) => changeHandler(e)}></input>
-                <button className='bg-lime-700 text-lime-50 rounded-lg w-56 h-8' onClick={(e) => handleSubmission(e)}>Upload meme!</button> 
-                
-                <SuccessfullyAddedMemeModal isOpen={isSuccessful} setIsOpen={setSuccessfullyAdded} modalText={modalText} modalTitle={modalTitle}></SuccessfullyAddedMemeModal>
+                    <input type="file" className='required:border-red-500 border-2 text-sm w-56' onChange={(e) => changeHandler(e)}></input>
+                    <input value="Upload meme!" type="submit" className='bg-lime-700 text-lime-50 rounded-lg w-56 h-8'></input> 
+                    
+                    <SuccessfullyAddedMemeModal isOpen={isSuccessful} setIsOpen={setSuccessfullyAdded} modalText={modalText} modalTitle={modalTitle}></SuccessfullyAddedMemeModal>
 
+                </div>
             </div>
-        </div>
+        </form>
     );
 }
 
