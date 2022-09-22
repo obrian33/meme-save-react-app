@@ -162,15 +162,15 @@ const AddMeme = () => {
                         Add a new meme!
                     </div>
                     <div className='flex flex-row justify-between w-72'>
-                        <div className='text-sm mr-1'>Meme Key:</div>
-                        <input placeholder='Key must be unique!' required onChange={(e) => setMemeKeyInput(e)} className='required:border-red-500 border-2 text-sm p-2 rounded-md h-6'></input>
+                        <div className="text-sm mr-1 after:content-['*'] after:ml-0.5 after:text-red-500 ">Meme Key:</div>
+                        <input placeholder='Key must be unique!' required onChange={(e) => setMemeKeyInput(e)} className='invalid:border-2 invalid:border-red-500 invalid:placeholder:text-red-500 text-sm p-2 rounded-md h-6'></input>
                     </div>
                     <div className='flex flex-row justify-between w-72'>
                         <div className='text-sm mr-1'>Meme Group:</div>
                         <input placeholder='Select a group!' required onChange={(e) => setMemeGroupInput(e)} className='text-sm p-2 rounded-md h-6'></input>
                     </div>
 
-                    <input type="file" className='required:border-red-500 border-2 text-sm w-56' onChange={(e) => changeHandler(e)}></input>
+                    <input type="file" className="after:content-['*'] after:ml-0.5 after:text-red-500 file:mr-4 file:py-2 file:px-4 required:border-red-500 file:border-0 file:rounded-full file:bg-lime-500 text-sm" onChange={(e) => changeHandler(e)}></input>
                     <input value="Upload meme!" type="submit" className='bg-lime-700 text-lime-50 rounded-lg w-56 h-8'></input> 
                     
                     <SuccessfullyAddedMemeModal isOpen={isSuccessful} setIsOpen={setSuccessfullyAdded} modalText={modalText} modalTitle={modalTitle}></SuccessfullyAddedMemeModal>
