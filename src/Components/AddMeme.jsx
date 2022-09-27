@@ -5,6 +5,8 @@ import { refreshTokenAPICallUnauthorized, setIDTokenFromRefreshResponse, getUser
 import { uploadMemeDataToDynamoDB, AddMemeWebCallBody } from "../api/AddMemeAPICalls/PostCalls";
 import { uploadMemeToS3 } from "../api/AddMemeAPICalls/PutCalls";
 import { v4 as uuidv4 } from 'uuid';
+import { Form, Formik, Field, ErrorMessage, useFormik } from 'formik';
+import * as Yup from 'yup';
 
 const AddMeme = () => {
     const [selectedFile, setSelectedFile] = useState();
@@ -153,8 +155,43 @@ const AddMeme = () => {
 	    
 	};
 
+    const handleBlur = (e) => {
+        console.log(e)
+        // f.setFieldError('memekey', 'hmmm');
+        return 'not unique';
+    }
+
+    const handleFile = (e) => {
+        
+        console.log(e);
+        return 'not unique';
+    }
+
+    const formik = useFormik({
+        initialValues : {
+        memekey: '', 
+        file: '',
+        },
+        onSubmit: (values, helpers) => {
+            helpers.setFieldError('memekey', 'not dcgun');
+            //helpers.validateField('memekey');
+            console.log(values);
+            
+        },
+        validationSchema: Yup.object({
+            memekey : Yup.string()
+            .required()
+            .test('is-unique', 'key already exists', () => {
+                return false;
+            }),
+            file: Yup.mixed()
+            .required()
+        })
+    });
+
     return (
-        <form onSubmit={(e) => handleSubmission(e)}>
+
+        <form onSubmit={formik.handleSubmit}>
             <div className='flex flex-col m-4 h-full'>
                 <div className='flex flex-col justify-evenly items-center h-72'>
                     {validationError && <div>Error! </div>}
@@ -163,21 +200,36 @@ const AddMeme = () => {
                     </div>
                     <div className='flex flex-row justify-between w-72'>
                         <div className="text-sm mr-1 after:content-['*'] after:ml-0.5 after:text-red-500 ">Meme Key:</div>
-                        <input placeholder='Key must be unique!' required onChange={(e) => setMemeKeyInput(e)} className='invalid:border-2 invalid:border-red-500 invalid:placeholder:text-red-500 text-sm p-2 rounded-md h-6'></input>
+                        <div className='flex flex-col'>
+                        <input onBlur={formik.handleBlur} onChange={formik.handleChange} value={formik.values.memekey} placeholder='Key must be unique!' id="memekey" name="memekey" type="text" className='invalid:border-2 invalid:border-red-500 invalid:placeholder:text-red-500 text-sm p-2 rounded-md h-6'></input>
+                        {/* <input placeholder='Key must be unique!' onChange={(e) => setMemeKeyInput(e)} className='invalid:border-2 invalid:border-red-500 invalid:placeholder:text-red-500 text-sm p-2 rounded-md h-6'></input> */}
+                        {formik.touched.memekey && formik.errors.memekey ? (
+                            <div className='text-sm text-red-500'>{formik.errors.memekey}</div>
+                        ) : null}
+                        </div>
                     </div>
+                    {/* <button type="button" onClick={() => formik.validateField('memekey')}>
+             Check Username
+           </button> */}
                     <div className='flex flex-row justify-between w-72'>
                         <div className='text-sm mr-1'>Meme Group:</div>
-                        <input placeholder='Select a group!' required onChange={(e) => setMemeGroupInput(e)} className='text-sm p-2 rounded-md h-6'></input>
+                        <input placeholder='Select a group!' onChange={(e) => setMemeGroupInput(e)} className='text-sm p-2 rounded-md h-6'></input>
                     </div>
 
-                    <input type="file" className="after:content-['*'] after:ml-0.5 after:text-red-500 file:mr-4 file:py-2 file:px-4 required:border-red-500 file:border-0 file:rounded-full file:bg-lime-500 text-sm" onChange={(e) => changeHandler(e)}></input>
-                    <input value="Upload meme!" type="submit" className='bg-lime-700 text-lime-50 rounded-lg w-56 h-8'></input> 
+                    <input onBlur={formik.handleBlur} onChange={formik.handleChange} value={formik.values.file} id="file" name="file" type="file" className="after:content-['*'] after:ml-0.5 after:text-red-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:rounded-full file:bg-lime-500 text-sm"></input>
+                    {/* <input type="file" className="after:content-['*'] after:ml-0.5 after:text-red-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:rounded-full file:bg-lime-500 text-sm" onChange={(e) => changeHandler(e)}></input> */}
+                    {formik.touched.file && formik.errors.file ? (
+                            <div className='text-sm text-red-500'>{formik.errors.file}</div>
+                        ) : null}
+                    <button type="submit" className='bg-lime-700 text-lime-50 rounded-lg w-56 h-8'>Upload meme!</button> 
                     
                     <SuccessfullyAddedMemeModal isOpen={isSuccessful} setIsOpen={setSuccessfullyAdded} modalText={modalText} modalTitle={modalTitle}></SuccessfullyAddedMemeModal>
 
                 </div>
             </div>
         </form>
+        // )}
+        // </Formik>
     );
 }
 
