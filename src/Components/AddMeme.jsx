@@ -7,6 +7,7 @@ import { uploadMemeToS3 } from "../api/AddMemeAPICalls/PutCalls";
 import { v4 as uuidv4 } from 'uuid';
 import { Form, Formik, Field, ErrorMessage, useFormik } from 'formik';
 import * as Yup from 'yup';
+import { checkIfMemeKeyIsUnique } from '../api/AddMemeAPICalls/GetCalls';
 
 const AddMeme = () => {
     const [selectedFile, setSelectedFile] = useState();
@@ -178,11 +179,16 @@ const AddMeme = () => {
             console.log(values);
             
         },
+        validateOnChange : false,
         validationSchema: Yup.object({
             memekey : Yup.string()
             .required()
-            .test('is-unique', 'key already exists', () => {
-                return false;
+            .test('is-unique', 'key already exists', async (value) => {
+                let token = getUserToken();
+                let decodedIdToken = jwt_decode(token.id_token);
+                let res = await checkIfMemeKeyIsUnique(token.id_token, value, decodedIdToken.email);
+                let jbod = await res.json();
+                return jbod.Items.length === 0;
             }),
             file: Yup.mixed()
             .required()
