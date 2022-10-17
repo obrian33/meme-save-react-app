@@ -18,7 +18,7 @@ const AddMeme = () => {
     const [modalTitle, setModalTitle] = useState('');
     const [hasRetried, setHasRetried] = useState(false);
     const [hasRetriedDynamoDB, setHasRetriedDynamoDB] = useState(false);
-    const { register, handleSubmit, trigger, setValue, formState : { errors, isValidating }, getFieldState } = useForm({ mode: 'onSubmit', reValidateMode: 'onSubmit', defaultValues: {
+    const { register, handleSubmit, setValue, formState : { errors, isValidating, dirtyFields }, getFieldState } = useForm({ mode: 'onSubmit', reValidateMode: 'onSubmit', defaultValues: {
         memekey: '',
         memegroup: '',
         file: {}
@@ -166,7 +166,7 @@ const AddMeme = () => {
                             validate: async (value) => { 
 
                             if(value === '') {
-                                return "can't be empty";
+                                return "Meme Key is required.";
                             }
                             // let token = getUserToken();
                             // let decodedIdToken = jwt_decode(token.id_token);
@@ -191,23 +191,23 @@ const AddMeme = () => {
                             // return json.Items.length === 0;
                             } 
                         }) } onChange={_.debounce((e) => {
-                                setValue('memekey', e.target.value);
-                                trigger('memekey');
+                                setValue('memekey', e.target.value, { shouldDirty: true, shouldTouch: true, shouldValidate: true});
                             }, 1000)
-                        } placeholder='Key must be unique!' className='text-sm p-2 rounded-md h-6'></input>
+                        } placeholder='Key must be unique!' className={`${ errors.memekey ? 'border-2 border-red-500 focus:outline-none focus:border-2 focus:border-red-500 focus-visible:border-red-500 focus-visible:border-2' : '' } focus:outline-none focus:border-2 focus:border-lime-700 text-sm p-2 rounded-md h-6`}></input>
 
                             { isCheckingMemeKey && <Spinner/>}
-                            { !errors.memekey && !isValidating && <BadgeCheckIcon className='w-4 h-4 ml-2 text-lime-700'/>}
-                            { errors.memekey && <XCircleIcon className='w-4 h-4 ml-2 text-red-700'/>}
+                            { !errors.memekey && !isValidating && !getFieldState('memekey').isDirty && <BadgeCheckIcon className='w-4 h-4 ml-2 text-gray-600'/>}
+                            { !errors.memekey && !isValidating && getFieldState('memekey').isDirty && <BadgeCheckIcon className='w-4 h-4 ml-2 text-lime-700'/>}
+                            { errors.memekey && !isValidating && <XCircleIcon className='w-4 h-4 ml-2 text-red-700'/>}
                             
                         </div>
-                        {errors.memekey && <span>{errors.memekey.message}</span>}
+                        {errors.memekey && <span className='text-xs text-red-700'>{errors.memekey.message}</span>}
                         </div>
                     </div>
 
                     <div className='flex flex-row w-72'>
                         <div className='text-sm mr-1'>Meme Group:</div>
-                        <input {...register('memegroup')} placeholder='Select a group!' className='text-sm p-2 rounded-md h-6'></input>
+                        <input {...register('memegroup')} placeholder='Select a group!' className='focus:outline-none focus:border-2 focus:border-lime-700 text-sm p-2 rounded-md h-6'></input>
                     </div>
 
                     <input {...register('file', { required: true }) } type="file" className="after:content-['*'] after:ml-0.5 after:text-red-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:rounded-full file:bg-lime-500 text-sm"></input>
