@@ -171,27 +171,19 @@ const AddMeme = () => {
                                 if(value === '') {
                                     return "Meme Key is required.";
                                 }
-                                // let token = getUserToken();
-                                // let decodedIdToken = jwt_decode(token.id_token);
+                                let token = getUserToken();
+                                let decodedIdToken = jwt_decode(token.id_token);
                                 
                                 setCheckingMemeKey(true);
 
-                                let d = () => { return new Promise(resolve => {
-                                    setTimeout(() => {
-                                        resolve('resolved');
-                                    }, 3000)
-                                })};
-
-                                console.log('before promise');
-                                let res = await d();
-
-                                console.log(res)
-                                // let res = await checkIfMemeKeyIsUnique(token.id_token, value, decodedIdToken.email);
-                                // let json = await res.json();
+                                let res = await checkIfMemeKeyIsUnique(token.id_token, value, decodedIdToken.email);
+                                let json = await res.json();
                                 
                                 setCheckingMemeKey(false);
-                                
-                                // return json.Items.length === 0;
+                                if (json.Items.length === 0) {
+                                    return;
+                                }
+                                return "Meme key already exists!";
                             } 
                         }) } onChange={_.debounce((e) => {
                                 setValue('memekey', e.target.value, { shouldDirty: true });
