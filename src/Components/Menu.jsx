@@ -10,8 +10,8 @@ const MenuItem = ({item, setMenuVisibility, menuVisibility}) => {
 };
 
 const getLoginUrls = (signedIn) => {
-    return !signedIn ? 'https://memesave.auth.us-west-2.amazoncognito.com/login?response_type=code&client_id=5s6nm5boso4h0p4de46idhsm20&redirect_uri=https://www.memesave.com' 
-    : 'https://memesave.auth.us-west-2.amazoncognito.com/logout?client_id=5s6nm5boso4h0p4de46idhsm20&logout_uri=https://www.memesave.com';
+    return !signedIn ? `https://memesave.auth.us-west-2.amazoncognito.com/login?response_type=code&client_id=${ process.env.NODE_ENV === 'development' ? process.env.REACT_APP_USER_POOL_DEV : process.env.REACT_APP_USER_POOL_PROD }&redirect_uri=${ process.env.NODE_ENV === 'development' ? process.env.REACT_APP_USER_POOL_REDIRECT_DEV : process.env.REACT_APP_USER_POOL_REDIRECT_PROD }` 
+    : `https://memesave.auth.us-west-2.amazoncognito.com/logout?client_id=${ process.env.NODE_ENV === 'development' ? process.env.REACT_APP_USER_POOL_DEV : process.env.REACT_APP_USER_POOL_PROD }&logout_uri=${ process.env.NODE_ENV === 'development' ? process.env.REACT_APP_USER_POOL_REDIRECT_DEV : process.env.REACT_APP_USER_POOL_REDIRECT_PROD }`;
 }
 
 const Menu = ({setMenuVisibility, menuVisibility, signedIn, setSignedIn}) => {

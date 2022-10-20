@@ -5,19 +5,26 @@ import { refreshTokenAPICallUnauthorized, setIDTokenFromRefreshResponse, getUser
 import { uploadMemeDataToDynamoDB, AddMemeWebCallBody } from "../api/AddMemeAPICalls/PostCalls";
 import { uploadMemeToS3 } from "../api/AddMemeAPICalls/PutCalls";
 import { v4 as uuidv4 } from 'uuid';
+import { checkIfMemeKeyIsUnique } from '../api/AddMemeAPICalls/GetCalls';
+import { useForm } from "react-hook-form";
+import _ from 'lodash';
+import Spinner from './Spinner';
+import { BadgeCheckIcon, XCircleIcon } from '@heroicons/react/solid'
 
 const AddMeme = () => {
-    const [selectedFile, setSelectedFile] = useState();
-    const [isFilePicked, setIsFilePicked] = useState(false);
-    const [memeKey, setMemeKey] = useState('');
-    const [memeGroup, setMemeGroup] = useState('');
-    const [validationError, setValidationError] = useState(false);
     const [isSuccessful, setSuccessfullyAdded] = useState(false);
+    const [isCheckingMemeKey, setCheckingMemeKey] = useState(false);
     const [modalText, setModalText] = useState('');
     const [modalTitle, setModalTitle] = useState('');
     const [hasRetried, setHasRetried] = useState(false);
     const [hasRetriedDynamoDB, setHasRetriedDynamoDB] = useState(false);
+    const { register, handleSubmit, getValues ,trigger, setValue, formState : { errors, isValidating, dirtyFields, isSubmitting }, getFieldState } = useForm({ mode: 'onSubmit', reValidateMode: 'onSubmit', defaultValues: {
+        memekey: '',
+        memegroup: '',
+        file: {}
+    }});
 
+    
     const createFileName = (imageFile) => {
         return `${uuidv4()}.${getFileTypeExtension(imageFile)}`;
     }
@@ -36,25 +43,6 @@ const AddMeme = () => {
         }
 
         return 'png';
-    }
-    const changeHandler = (event) => {
-        setValidationError(false);
-		setSelectedFile(event.target.files[0]);
-        setIsFilePicked(true);
-	};
-
-    const setMemeKeyInput = (event) => {
-        setValidationError(false);
-        setMemeKey(event.target.value);
-    }
-
-    const setMemeGroupInput = (event) => {
-        setValidationError(false);
-        setMemeGroup(event.target.value);
-    }
-
-    const isValid = () => {
-        return isFilePicked && memeGroup && memeKey;
     }
 
     const failedToAddMeme = () => {
@@ -126,24 +114,20 @@ const AddMeme = () => {
 
 	const handleSubmission = async (event) => {
         event.preventDefault();
-
-        if(!isValid()) {
-            setValidationError(true);
-            return;
-        }
         
+        let formData = getValues();
         let token = getUserToken();
         if(!token) {
             alert('YOU MUST BE SIGNED IN TO ADD MEMES');
             return;
         }
         let decodedIdToken = jwt_decode(token.id_token);
-        let filename = createFileName(selectedFile);
-        let body = AddMemeWebCallBody(memeKey, memeGroup, decodedIdToken.email, filename);
-
+        let filename = createFileName(formData.file[0]);
+        let body = AddMemeWebCallBody(formData.memekey, formData.memegroup, decodedIdToken.email, filename);
+        
         try {
 
-            await addMemeWebCalls(token, selectedFile, filename, body)
+            await addMemeWebCalls(token, formData.file[0], filename, body);
 
 
         } 
@@ -153,29 +137,84 @@ const AddMeme = () => {
 	    
 	};
 
+    const memekeyIsPristine = () => {
+        return !errors.memekey && !isValidating && !getFieldState('memekey').isDirty;
+    }
+
+    const fileIsPristine = () => {
+        return !getFieldState('file').isDirty &&  !errors.file;
+    }
     return (
-        <div className='flex flex-col m-4 h-full'>
-            <div className='flex flex-col justify-evenly items-center h-72'>
-                {validationError && <div>Error! </div>}
-                <div className='flex h-10 text-3xl text-lime-600'>
-                    Add a new meme!
-                </div>
-                <div className='flex flex-row justify-between w-72'>
-                    <div className='text-sm mr-1'>Meme Key:</div>
-                    <input required onChange={(e) => setMemeKeyInput(e)} className='p-2 rounded-md h-6'></input>
-                </div>
-                <div className='flex flex-row justify-between w-72'>
-                    <div className='text-sm mr-1'>Meme Group:</div>
-                    <input required onChange={(e) => setMemeGroupInput(e)} className='p-2 rounded-md h-6'></input>
-                </div>
 
-                <input type="file" className='text-sm w-56' onChange={(e) => changeHandler(e)}></input>
-                <button className='bg-lime-700 text-lime-50 rounded-lg w-56 h-8' onClick={(e) => handleSubmission(e)}>Upload meme!</button> 
-                
-                <SuccessfullyAddedMemeModal isOpen={isSuccessful} setIsOpen={setSuccessfullyAdded} modalText={modalText} modalTitle={modalTitle}></SuccessfullyAddedMemeModal>
+            <form onSubmit={ handleSubmission}>
+            <div className='flex flex-col m-4 h-full'>
+                <div className='flex flex-col justify-evenly items-center h-80'>                    
+                    <div className='flex flex-col items-center h-20'>
+                        <div className='flex text-3xl text-lime-600'>
+                            Add a new meme!
+                        </div>
+                        <div className='flex text-sm sm:text-base text-lime-800'>
+                            Memekey must be unique!
+                        </div>
+                        <div className='flex text-sm sm:text-base text-lime-800'>
+                            File must be uploaded.
+                        </div>
+                    </div>
 
+                    <div className='flex flex-row items-center w-72'>
+                        <div className="text-sm mr-1 after:content-['*'] after:ml-0.5 after:text-red-500 ">Meme Key:</div>
+                        <div className='flex flex-col'>
+                        <div className='flex items-center'>
+                        <input {...register('memekey', {
+                            validate: async (value) => { 
+                                
+                                if(value === '') {
+                                    return "Meme Key is required.";
+                                }
+                                let token = getUserToken();
+                                let decodedIdToken = jwt_decode(token.id_token);
+                                
+                                setCheckingMemeKey(true);
+
+                                let res = await checkIfMemeKeyIsUnique(token.id_token, value, decodedIdToken.email);
+                                let json = await res.json();
+                                
+                                setCheckingMemeKey(false);
+                                if (json.Items.length === 0) {
+                                    return;
+                                }
+                                return "Meme key already exists!";
+                            } 
+                        }) } onChange={_.debounce((e) => {
+                                setValue('memekey', e.target.value, { shouldDirty: true });
+                                trigger('memekey');
+                            }, 1000)
+                        } placeholder='Key must be unique!' className={`${ errors.memekey ? 'border-2 border-red-500 focus:outline-none focus:border-2 focus:border-red-500 focus-visible:border-red-500 focus-visible:border-2' : '' } focus:outline-none focus:border-2 focus:border-lime-700 text-sm p-2 rounded-md h-6`}></input>
+
+                            { isCheckingMemeKey && <Spinner/>}
+                            { !errors.memekey && !isValidating && !getFieldState('memekey').isDirty && <BadgeCheckIcon className='w-4 h-4 ml-2 text-gray-600'/>}
+                            { !errors.memekey && !isValidating && !isSubmitting && getFieldState('memekey').isDirty && <BadgeCheckIcon className='w-4 h-4 ml-2 text-lime-700'/>}
+                            { errors.memekey && !isValidating && <XCircleIcon className='w-4 h-4 ml-2 text-red-700'/>}
+                            
+                        </div>
+                        {errors.memekey && <span className='text-xs text-red-700'>{errors.memekey.message}</span>}
+                        </div>
+                    </div>
+
+                    <div className='flex flex-row w-72'>
+                        <div className='text-sm mr-1'>Meme Group:</div>
+                        <input {...register('memegroup')} placeholder='Select a group!' className='focus:outline-none focus:border-2 focus:border-lime-700 text-sm p-2 rounded-md h-6'></input>
+                    </div>
+
+                    <input {...register('file', { required: true }) } type="file" className="after:content-['*'] after:ml-0.5 after:text-red-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:rounded-full file:bg-lime-600 file:text-lime-50 text-sm"></input>
+                    {errors.file && <span className='text-xs text-red-700'>This field is required</span>}
+                    <button type="submit" disabled={ isValidating || isSubmitting || errors.memekey || errors.file || memekeyIsPristine() || fileIsPristine() } className={`${ isValidating || isSubmitting || memekeyIsPristine() || errors.memekey || errors.file || fileIsPristine() ? 'opacity-50' :  '' } bg-lime-700 text-lime-50 rounded-lg w-56 h-8 `}>Upload meme!</button> 
+                    
+                    <SuccessfullyAddedMemeModal isOpen={isSuccessful} setIsOpen={setSuccessfullyAdded} modalText={modalText} modalTitle={modalTitle}></SuccessfullyAddedMemeModal>
+
+                </div>
             </div>
-        </div>
+            </form>
     );
 }
 
