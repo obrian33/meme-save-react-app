@@ -115,36 +115,35 @@ const AddMeme = () => {
 	const handleSubmission = async (event) => {
         event.preventDefault();
         
-        // if(!isValid()) {
-        //     setValidationError(true);
-        //     return;
-        // }
-        console.log(getValues())
-        // let token = getUserToken();
-        // if(!token) {
-        //     alert('YOU MUST BE SIGNED IN TO ADD MEMES');
-        //     return;
-        // }
-        // let decodedIdToken = jwt_decode(token.id_token);
-        // let filename = createFileName(selectedFile);
-        // let body = AddMemeWebCallBody(memeKey, memeGroup, decodedIdToken.email, filename);
+        let formData = getValues();
+        let token = getUserToken();
+        if(!token) {
+            alert('YOU MUST BE SIGNED IN TO ADD MEMES');
+            return;
+        }
+        let decodedIdToken = jwt_decode(token.id_token);
+        let filename = createFileName(formData.file[0]);
+        let body = AddMemeWebCallBody(formData.memekey, formData.memegroup, decodedIdToken.email, filename);
+        
+        try {
 
-        // try {
-
-        //     await addMemeWebCalls(token, selectedFile, filename, body)
+            await addMemeWebCalls(token, formData.file[0], filename, body);
 
 
-        // } 
-        // catch(err) {
-        //     console.log(err);
-        // }
+        } 
+        catch(err) {
+            console.log(err);
+        }
 	    
 	};
 
-    const memekeyIsValid = () => {
+    const memekeyIsPristine = () => {
         return !errors.memekey && !isValidating && !getFieldState('memekey').isDirty;
     }
 
+    const fileIsPristine = () => {
+        return !getFieldState('file').isDirty &&  !errors.file;
+    }
     return (
 
             <form onSubmit={ handleSubmission}>
@@ -168,11 +167,7 @@ const AddMeme = () => {
                         <div className='flex items-center'>
                         <input {...register('memekey', {
                             validate: async (value) => { 
-                                console.log(isSubmitting);
-                                console.log(isValidating);
-                                if(isSubmitting) {
-                                    return
-                                }
+                                
                                 if(value === '') {
                                     return "Meme Key is required.";
                                 }
@@ -221,7 +216,7 @@ const AddMeme = () => {
 
                     <input {...register('file', { required: true }) } type="file" className="after:content-['*'] after:ml-0.5 after:text-red-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:rounded-full file:bg-lime-600 file:text-lime-50 text-sm"></input>
                     {errors.file && <span className='text-xs text-red-700'>This field is required</span>}
-                    <button type="submit" disabled={ isValidating || isSubmitting || errors.memekey || errors.file || (memekeyIsValid() && (!getFieldState('file').isDirty &&  !errors.file)) } className={`${ isValidating || isSubmitting || (memekeyIsValid() || errors.memekey || errors.file || (!getFieldState('file').isDirty && !errors.file)) ? 'opacity-50' :  '' } bg-lime-700 text-lime-50 rounded-lg w-56 h-8 `}>Upload meme!</button> 
+                    <button type="submit" disabled={ isValidating || isSubmitting || errors.memekey || errors.file || memekeyIsPristine() || fileIsPristine() } className={`${ isValidating || isSubmitting || memekeyIsPristine() || errors.memekey || errors.file || fileIsPristine() ? 'opacity-50' :  '' } bg-lime-700 text-lime-50 rounded-lg w-56 h-8 `}>Upload meme!</button> 
                     
                     <SuccessfullyAddedMemeModal isOpen={isSuccessful} setIsOpen={setSuccessfullyAdded} modalText={modalText} modalTitle={modalTitle}></SuccessfullyAddedMemeModal>
 
