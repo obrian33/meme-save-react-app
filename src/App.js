@@ -84,7 +84,8 @@ function App() {
         </div>
 
         <div className='flex flex-row justify-start m-4'>
-          <MenuIcon onClick={() => { setMenuVisibility(!menuVisibility) }} className={`bg-lime-600 text-lime-50 rounded-lg w-16 h-8 `}></MenuIcon>         
+          <MenuIcon onClick={() => { setMenuVisibility(!menuVisibility) }} className={`bg-lime-600 text-lime-50 rounded-lg w-16 h-8 `}></MenuIcon>   
+          <span className="animate-ping rounded-full p-2 bg-lime-400 absolute left-16"></span>      
         </div>
         <Outlet context={[user]}/>
       </div>
