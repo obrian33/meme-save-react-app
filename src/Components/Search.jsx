@@ -4,6 +4,7 @@ import { getUserToken } from "../utilities/TokenHandling";
 import jwt_decode from 'jwt-decode';
 import { copyImage } from "../api/SearchAPICalls/GetCalls";
 import { Transition } from "@headlessui/react";
+import { useOutletContext } from "react-router-dom";
 
 const SearchResult = ({ imgsrc, searchPhrase }) => {
     return <img onClick={() => (imgsrc.match(/png/g) ? copyImage(getUserToken().id_token, imgsrc) : () => {}) } className="w-28 m-2" src={`https://meme-save.s3.us-west-2.amazonaws.com/${imgsrc}`} alt={searchPhrase}></img>
@@ -12,6 +13,7 @@ const SearchResult = ({ imgsrc, searchPhrase }) => {
 const Search = () => {
     const [phrase, setPhrase] = useState('');
     const [searchSuggestions, setSearchSuggestions] = useState([]);
+    const [ signedIn ] = useOutletContext();
 
     const getSuggestions = (event) => {
         setPhrase(event.target.value);
@@ -45,19 +47,9 @@ const Search = () => {
                             return <SearchResult key={searchSuggestion.memekey} imgsrc={searchSuggestion.s3key} searchPhrase={phrase}></SearchResult>
                         })}
                     </div>
-                    
-                    <Transition
-                    show={true}
-                    enter="transition-opacity duration-75"
-                    enterFrom="opacity-0"
-                    enterTo="opacity-100"
-                    leave="transition-opacity duration-150"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                    className="bg-lime-900"
-                    >
+                    { !signedIn && <div className="animate-pulse bg-lime-500 rounded-xl p-4 text-lime-50">
                         You are not logged in!
-                    </Transition>
+                    </div> }
                 </div>
             </div>
         </>
