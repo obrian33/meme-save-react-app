@@ -61,7 +61,6 @@ function App() {
       res.then((res) => {
         
         res.json().then((result) => {
-          console.log(result);
           localStorage.setItem('token', JSON.stringify(result));
           setSignedIn(true);
         })
