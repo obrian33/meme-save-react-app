@@ -85,7 +85,7 @@ function App() {
           enter="transition ease duration-700 transform"
           enterFrom="opacity-100 -translate-x-full"
           enterTo="opacity-100 translate-x-0"
-          leave="transition ease duration-1000 transform"
+          leave="transition ease duration-700 transform"
           leaveFrom="opacity-100 translate-x-0"
           leaveTo="opacity-100 -translate-x-full"
         >
