@@ -7,6 +7,7 @@ import jwt_decode from "jwt-decode";
 import { getParsedJWTToken, getUserToken } from './utilities/TokenHandling';
 import { isTokenExpired, getRefreshedCredentials, setIDTokenFromRefreshResponse } from './utilities/TokenHandling'
 import { getTokens } from './utilities/Login';
+import { Transition } from '@headlessui/react';
 
 
 function App() {
@@ -78,14 +79,24 @@ function App() {
   return (
     <div className="flex flex-col mx-auto h-screen bg-lime-100">
       <div className='flex flex-col'>
-        <div className={ !menuVisibility ? 'hidden' : 'flex z-20 absolute h-screen'}>
+          <Transition 
+          className={ 'flex z-20 absolute h-screen'}
+          show={menuVisibility}
+          enter="transition ease duration-700 transform"
+          enterFrom="opacity-100 -translate-x-full"
+          enterTo="opacity-100 translate-x-0"
+          leave="transition ease duration-700 transform"
+          leaveFrom="opacity-100 translate-x-0"
+          leaveTo="opacity-100 -translate-x-full"
+        >
             <Menu menuVisibility={menuVisibility} setMenuVisibility={ setMenuVisibility } signedIn={signedIn} setSignedIn={setSignedIn}></Menu>
-        </div>
+          </Transition>
 
         <div className='flex flex-row justify-start m-4'>
           <MenuIcon onClick={() => { setMenuVisibility(!menuVisibility) }} className={`bg-lime-600 text-lime-50 rounded-lg w-16 h-8 `}></MenuIcon>   
           {!signedIn && <span className="animate-ping rounded-full p-2 bg-lime-400 absolute left-16"></span> }
         </div>
+        
         <Outlet context={[signedIn]}/>
       </div>
     </div>
