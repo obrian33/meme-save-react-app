@@ -5,9 +5,35 @@ import { getUserToken } from '../utilities/TokenHandling';
 import { AddMemeWebCallBody, uploadMemeDataToDynamoDB } from '../api/AddMemeAPICalls/PostCalls';
 import { UpdateMemeGroup } from '../api/MemeCollectionAPICalls/PutCalls';
 import { deleteDynamoDBEntry } from '../api/MemeCollectionAPICalls/DeleteCalls';
+import { useForm } from "react-hook-form";
+import jwt_decode from "jwt-decode";
+import _ from 'lodash';
+import { checkIfMemeKeyIsUnique } from '../api/AddMemeAPICalls/GetCalls';
+import { useEffect } from 'react';
+import Spinner from './Spinner';
+import { BadgeCheckIcon, XCircleIcon } from '@heroicons/react/solid'
 
 export const EditMemeModal = ({showEditModal, setShowEditModal, meme, setMemes, memes, newMemekey, setNewMemeKey, newMemegroup, setNewMemeGroup }) => {
     const [selectedFile, setSelectedFile] = useState();
+    const [isCheckingMemeKey, setCheckingMemeKey] = useState(false);
+    
+    const { register, handleSubmit, getValues, reset, trigger, setValue, formState : { errors, isValidating, dirtyFields, isSubmitting }, getFieldState } = useForm({ mode: 'onSubmit', reValidateMode: 'onSubmit', defaultValues: {
+      memekey: newMemekey,
+      memegroup: newMemegroup,
+      file: {}
+  }});
+  useEffect(() => {
+      reset({memekey : newMemekey, memegroup: newMemegroup, file: {}})
+  }, [newMemekey, newMemegroup]);
+
+  
+  const memekeyIsPristine = () => {
+    return !errors.memekey && !isValidating && !getFieldState('memekey').isDirty;
+  }
+
+  const fileIsPristine = () => {
+      return !getFieldState('file').isDirty &&  !errors.file;
+  }
     
     let closeModal = () => {
         setShowEditModal(false);
@@ -178,13 +204,43 @@ export const EditMemeModal = ({showEditModal, setShowEditModal, meme, setMemes, 
                         <div className='text-sm mr-1'>
                             Memekey: 
                         </div>
-                        <input className='p-2 rounded-md h-6'  value={newMemekey} onChange={(e) => setNewMemeKey(e.target.value)}></input>
+                        <div className='flex items-center'>
+                        <input className='p-2 rounded-md h-6' {...register('memekey', {
+                            validate: async (value) => { 
+                                
+                                if(value === '') {
+                                    return "Meme Key is required.";
+                                }
+                                let token = getUserToken();
+                                let decodedIdToken = jwt_decode(token.id_token);
+                                
+                                setCheckingMemeKey(true);
+
+                                let res = await checkIfMemeKeyIsUnique(token.id_token, value, decodedIdToken.email);
+                                let json = await res.json();
+                                
+                                setCheckingMemeKey(false);
+                                if (json.Items.length === 0) {
+                                    return;
+                                }
+                                return "Meme key already exists!";
+                            } 
+                        }) } onChange={_.debounce((e) => {
+                                setValue('memekey', e.target.value, { shouldDirty: true });
+                                trigger('memekey');
+                            }, 1000)
+                        }></input> { isCheckingMemeKey && <Spinner/>
+                        }
+                                                    { !errors.memekey && !isValidating && !getFieldState('memekey').isDirty && <BadgeCheckIcon className='w-4 h-4 ml-2 text-gray-600'/>}
+                            { !errors.memekey && !isValidating && !isSubmitting && getFieldState('memekey').isDirty && <BadgeCheckIcon className='w-4 h-4 ml-2 text-lime-700'/>}
+                            { errors.memekey && !isValidating && <XCircleIcon className='w-4 h-4 ml-2 text-red-700'/>}
+                            </div>
                       </div>
                       <div className="flex my-2">
                         <div className='text-sm mr-1'>
                             Memegroup: 
                         </div>
-                        <input className='p-2 rounded-md h-6' value={newMemegroup} onChange={(e) => setNewMemeGroup(e.target.value)}></input>
+                        <input className='p-2 rounded-md h-6' {...register("memegroup")}></input>
                       </div>
                       <div className="flex my-2">
                         <div className='text-sm mr-1'>
@@ -196,8 +252,9 @@ export const EditMemeModal = ({showEditModal, setShowEditModal, meme, setMemes, 
   
                     <div className="mt-4">
                       <button
+                        disabled={isValidating || isSubmitting || errors.memekey || errors.file || memekeyIsPristine() || fileIsPristine() }
                         type="button"
-                        className="inline-flex justify-center rounded-md border border-transparent bg-lime-700 px-4 py-2 text-sm font-medium text-lime-50 hover:bg-lime-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-lime-500 focus-visible:ring-offset-2"
+                        className={`inline-flex justify-center rounded-md border border-transparent ${isValidating || isSubmitting || errors.memekey || errors.file || memekeyIsPristine() || fileIsPristine()  ? "opacity-50" : "hover:bg-lime-200"} bg-lime-700 px-4 py-2 text-sm font-medium text-lime-50  focus:outline-none focus-visible:ring-2 focus-visible:ring-lime-500 focus-visible:ring-offset-2`}
                         onClick={() => submitData()}
                       >
                         Update meme
