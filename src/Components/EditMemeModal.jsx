@@ -39,47 +39,51 @@ export const EditMemeModal = ({showEditModal, setShowEditModal, meme, setMemes, 
         setShowEditModal(false);
     }
 
-    const isOnlyS3ImageChanged = () => {
-        return newMemekey === meme.memekey && newMemegroup === meme.memegroup && selectedFile;
+    const isOnlyS3ImageChanged = (val) => {
+      
+      return val.memekey === meme.memekey && val.memegroup === meme.memegroup && val.file[0];
     }
 
-    const isOnlyMemeKeyChanged = () => {
-        return newMemekey !== meme.memekey && newMemegroup === meme.memegroup && !selectedFile;
+    const isOnlyMemeKeyChanged = (val) => {
+      
+      return val.memekey !== meme.memekey && val.memegroup === meme.memegroup && !val.file[0];
     }
 
-    const isOnlyMemeGroupChanged = () => {
-        return newMemekey === meme.memekey && newMemegroup !== meme.memegroup && !selectedFile;
+    const isOnlyMemeGroupChanged = (val) => {
+      return val.memekey === meme.memekey && val.memegroup !== meme.memegroup && !val.file[0];
     }
 
-    const isMemeGroupAndImageChanged = () => {
-        return meme.memegroup !== newMemegroup && selectedFile && meme.memekey === newMemekey;
+    const isMemeGroupAndImageChanged = (val) => {
+        return meme.memegroup !== val.memegroup && val.file[0] && meme.memekey === val.memekey;
     }
 
-    const isMemeKeyAndImageChanged = () => {
-        return meme.memegroup === newMemegroup && selectedFile && meme.memekey !== newMemekey;
+    const isMemeKeyAndImageChanged = (val) => {
+      return meme.memegroup === val.memegroup && val.file[0] && meme.memekey !== val.memekey;
     }
 
-    const isMemeKeyAndImageChangedAndMemeGroupChanged = () => {
-      return meme.memegroup !== newMemegroup && selectedFile && meme.memekey !== newMemekey;
+    const isMemeKeyAndImageChangedAndMemeGroupChanged = (val) => {
+      return meme.memegroup !== val.memegroup && val.file[0] && meme.memekey !== val.memekey;
     }
 
-    const isMemeKeyAndMemeGroupChanged = () => {
-      return meme.memekey !== newMemekey && meme.memegroup !== newMemegroup && !selectedFile;
+    const isMemeKeyAndMemeGroupChanged = (val) => {
+      return meme.memekey !== val.memekey && meme.memegroup !== val.memegroup && !val.file[0];
     }
 
     const submitData = async () => {
       
       
         let parsedUserToken = getUserToken();
-
-        if(isOnlyS3ImageChanged()) {
+        let val = getValues();
+        
+        return 
+        if(isOnlyS3ImageChanged(val)) {
           // works but doesn't update with the new picture.
           await uploadMemeToS3(parsedUserToken.id_token, selectedFile, selectedFile.type, meme.s3key);
           let newMemes = [...memes];
           setMemes(newMemes);
         }
 
-        if(isOnlyMemeKeyChanged()) {
+        if(isOnlyMemeKeyChanged(val)) {
           // works.
           await deleteDynamoDBEntry(parsedUserToken.id_token, meme.email, meme.memekey);
           let body = AddMemeWebCallBody(newMemekey, meme.memegroup, meme.email, meme.s3key);
@@ -91,7 +95,7 @@ export const EditMemeModal = ({showEditModal, setShowEditModal, meme, setMemes, 
           setMemes(newMemes);
         }
 
-        if(isOnlyMemeGroupChanged()) {
+        if(isOnlyMemeGroupChanged(val)) {
           // doesn't work
           let putBody = AddMemeWebCallBody(meme.memekey, newMemegroup, meme.email, meme.s3key)
           await UpdateMemeGroup(parsedUserToken.id_token, putBody);
@@ -102,7 +106,7 @@ export const EditMemeModal = ({showEditModal, setShowEditModal, meme, setMemes, 
           setMemes(newMemes);
         }
 
-        if(isMemeGroupAndImageChanged()) {
+        if(isMemeGroupAndImageChanged(val)) {
           let putBody = AddMemeWebCallBody(meme.memekey, newMemegroup, meme.email, meme.s3key)
           await UpdateMemeGroup(parsedUserToken.id_token, putBody);
 
@@ -114,7 +118,7 @@ export const EditMemeModal = ({showEditModal, setShowEditModal, meme, setMemes, 
           setMemes(newMemes);
         }
 
-        if(isMemeKeyAndImageChanged()) {
+        if(isMemeKeyAndImageChanged(val)) {
           await uploadMemeToS3(parsedUserToken.id_token, selectedFile, selectedFile.type, meme.s3key);
 
           await deleteDynamoDBEntry(parsedUserToken.id_token, meme.email, newMemekey);
@@ -129,7 +133,7 @@ export const EditMemeModal = ({showEditModal, setShowEditModal, meme, setMemes, 
           setMemes(newMemes);
         }
 
-        if(isMemeKeyAndMemeGroupChanged()) {
+        if(isMemeKeyAndMemeGroupChanged(val)) {
           await deleteDynamoDBEntry(parsedUserToken.id_token, meme.email, newMemekey);
 
           let body = AddMemeWebCallBody(newMemekey, newMemegroup, meme.email, meme.s3key);
@@ -144,7 +148,7 @@ export const EditMemeModal = ({showEditModal, setShowEditModal, meme, setMemes, 
           setMemes(newMemes);
         }
 
-        if(isMemeKeyAndImageChangedAndMemeGroupChanged()) {
+        if(isMemeKeyAndImageChangedAndMemeGroupChanged(val)) {
           await uploadMemeToS3(parsedUserToken.id_token, selectedFile, selectedFile.type, meme.s3key);
 
           await deleteDynamoDBEntry(parsedUserToken.id_token, meme.email, newMemekey);
@@ -229,9 +233,8 @@ export const EditMemeModal = ({showEditModal, setShowEditModal, meme, setMemes, 
                                 setValue('memekey', e.target.value, { shouldDirty: true });
                                 trigger('memekey');
                             }, 1000)
-                        }></input> { isCheckingMemeKey && <Spinner/>
-                        }
-                                                    { !errors.memekey && !isValidating && !getFieldState('memekey').isDirty && <BadgeCheckIcon className='w-4 h-4 ml-2 text-gray-600'/>}
+                        }></input> { isCheckingMemeKey && <Spinner/>}
+                            { !errors.memekey && !isValidating && !getFieldState('memekey').isDirty && <BadgeCheckIcon className='w-4 h-4 ml-2 text-gray-600'/>}
                             { !errors.memekey && !isValidating && !isSubmitting && getFieldState('memekey').isDirty && <BadgeCheckIcon className='w-4 h-4 ml-2 text-lime-700'/>}
                             { errors.memekey && !isValidating && <XCircleIcon className='w-4 h-4 ml-2 text-red-700'/>}
                             </div>
@@ -246,15 +249,15 @@ export const EditMemeModal = ({showEditModal, setShowEditModal, meme, setMemes, 
                         <div className='text-sm mr-1'>
                             New Image: <img className="w-28 m-2" src={`https://meme-save.s3.us-west-2.amazonaws.com/${meme.s3key}?${new Date().getTime()}`} alt='3'></img>
                         </div>
-                        <input type="file" className='text-sm w-56'  onChange={(e) => setSelectedFile(e.target.files[0]) }></input>
+                        <input type="file" className='text-sm w-56' {...register("file")}></input>
                       </div>
                     </div>
-  
+                    
                     <div className="mt-4">
                       <button
-                        disabled={isValidating || isSubmitting || errors.memekey || errors.file || memekeyIsPristine() || fileIsPristine() }
+                        disabled={isValidating || isSubmitting || errors.memekey || errors.file || (memekeyIsPristine() && fileIsPristine() && !getFieldState('memegroup').isDirty && !getFieldState('file').isDirty) }
                         type="button"
-                        className={`inline-flex justify-center rounded-md border border-transparent ${isValidating || isSubmitting || errors.memekey || errors.file || memekeyIsPristine() || fileIsPristine()  ? "opacity-50" : "hover:bg-lime-200"} bg-lime-700 px-4 py-2 text-sm font-medium text-lime-50  focus:outline-none focus-visible:ring-2 focus-visible:ring-lime-500 focus-visible:ring-offset-2`}
+                        className={`inline-flex justify-center rounded-md border border-transparent ${isValidating || isSubmitting || errors.memekey || errors.file || (memekeyIsPristine() && fileIsPristine() && !getFieldState('memegroup').isDirty && !getFieldState('file').isDirty)  ? "opacity-50" : "hover:bg-lime-200"} bg-lime-700 px-4 py-2 text-sm font-medium text-lime-50  focus:outline-none focus-visible:ring-2 focus-visible:ring-lime-500 focus-visible:ring-offset-2`}
                         onClick={() => submitData()}
                       >
                         Update meme
