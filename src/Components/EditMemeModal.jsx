@@ -70,103 +70,101 @@ export const EditMemeModal = ({showEditModal, setShowEditModal, meme, setMemes, 
     }
 
     const submitData = async () => {
+      let parsedUserToken = getUserToken();
+      let val = getValues(); // Need to do full integration test with each function.
+
       
+      if(isOnlyS3ImageChanged(val)) {
+        // works but doesn't update with the new picture.
+        await uploadMemeToS3(parsedUserToken.id_token, val.file[0], val.file[0].type, meme.s3key);
+        let newMemes = [...memes];
+        setMemes(newMemes);
+      }
+
+      if(isOnlyMemeKeyChanged(val)) {
+        // works.
+        await deleteDynamoDBEntry(parsedUserToken.id_token, meme.email, meme.memekey);
+        let body = AddMemeWebCallBody(val.memekey, meme.memegroup, meme.email, meme.s3key);
+        await uploadMemeDataToDynamoDB(parsedUserToken.id_token, body); // If present, you would delete and lose all data. Wanna re-insert.
+        memes.splice(memes.indexOf(x => x.memekey === meme.memekey), 1);
+        let newMemes = [...memes];
+        meme.memekey = val.memekey;
+        newMemes.push(meme);
+        setMemes(newMemes);
+      }
+
+      if(isOnlyMemeGroupChanged(val)) {
+        // doesn't work
+        let putBody = AddMemeWebCallBody(meme.memekey, val.memegroup, meme.email, meme.s3key)
+        await UpdateMemeGroup(parsedUserToken.id_token, putBody);
+        memes.splice(memes.indexOf(x => x.memekey === meme.memekey), 1);
+        meme.memegroup = val.memegroup;
+        let newMemes = [...memes];
+        newMemes.push(meme);
+        setMemes(newMemes);
+      }
+
+      if(isMemeGroupAndImageChanged(val)) {
+        let putBody = AddMemeWebCallBody(meme.memekey, val.memegroup, meme.email, meme.s3key)
+        await UpdateMemeGroup(parsedUserToken.id_token, putBody);
+
+        await uploadMemeToS3(parsedUserToken.id_token, val.file[0], val.file[0].type, meme.s3key);
+        memes.splice(memes.indexOf(x => x.memekey === meme.memekey), 1);
+        meme.memegroup = val.memegroup;
+        let newMemes = [...memes];
+        newMemes.push(meme);
+        setMemes(newMemes);
+      }
+
+      if(isMemeKeyAndImageChanged(val)) {
+        await uploadMemeToS3(parsedUserToken.id_token, val.file[0], val.file[0].type, meme.s3key);
+
+        await deleteDynamoDBEntry(parsedUserToken.id_token, meme.email, meme.memekey);
+        let body = AddMemeWebCallBody(val.memekey, meme.memegroup, meme.email, meme.s3key);
+        await uploadMemeDataToDynamoDB(parsedUserToken.id_token, body); // If present, you would delete and lose all data. Wanna re-insert.
+
+        memes.splice(memes.indexOf(x => x.memekey === meme.memekey), 1);
+
+        let newMemes = [...memes];
+        meme.memekey = val.memekey;
+        newMemes.push(meme);
+        setMemes(newMemes);
+      }
+
+      if(isMemeKeyAndMemeGroupChanged(val)) {
+        await deleteDynamoDBEntry(parsedUserToken.id_token, meme.email, meme.memekey);
+
+        let body = AddMemeWebCallBody(val.memekey, val.memegroup, meme.email, meme.s3key);
+        await uploadMemeDataToDynamoDB(parsedUserToken.id_token, body); // If present, you would delete and lose all data. Wanna re-insert.
+
+        memes.splice(memes.indexOf(x => x.memekey === meme.memekey), 1);
+
+        let newMemes = [...memes];
+        meme.memekey = val.memekey;
+        meme.memegroup = val.memegroup;
+        newMemes.push(meme);
+        setMemes(newMemes);
+      }
+
+      if(isMemeKeyAndImageChangedAndMemeGroupChanged(val)) {
+        await uploadMemeToS3(parsedUserToken.id_token, val.file[0], val.file[0].type, meme.s3key);
+
+        await deleteDynamoDBEntry(parsedUserToken.id_token, meme.email, meme.memekey);
+
+        let body = AddMemeWebCallBody(val.memekey, val.memegroup, meme.email, meme.s3key);
+        await uploadMemeDataToDynamoDB(parsedUserToken.id_token, body); // If present, you would delete and lose all data. Wanna re-insert.
+
+        memes.splice(memes.indexOf(x => x.memekey === meme.memekey), 1);
+
+        let newMemes = [...memes];
+        meme.memekey = val.memekey;
+        meme.memegroup = val.memegroup;
+        newMemes.push(meme);
+        setMemes(newMemes);
+
+      }
       
-        let parsedUserToken = getUserToken();
-        let val = getValues();
-        
-        return 
-        if(isOnlyS3ImageChanged(val)) {
-          // works but doesn't update with the new picture.
-          await uploadMemeToS3(parsedUserToken.id_token, selectedFile, selectedFile.type, meme.s3key);
-          let newMemes = [...memes];
-          setMemes(newMemes);
-        }
-
-        if(isOnlyMemeKeyChanged(val)) {
-          // works.
-          await deleteDynamoDBEntry(parsedUserToken.id_token, meme.email, meme.memekey);
-          let body = AddMemeWebCallBody(newMemekey, meme.memegroup, meme.email, meme.s3key);
-          await uploadMemeDataToDynamoDB(parsedUserToken.id_token, body); // If present, you would delete and lose all data. Wanna re-insert.
-          memes.splice(memes.indexOf(x => x.memekey === meme.memekey), 1);
-          let newMemes = [...memes];
-          meme.memekey = newMemekey;
-          newMemes.push(meme);
-          setMemes(newMemes);
-        }
-
-        if(isOnlyMemeGroupChanged(val)) {
-          // doesn't work
-          let putBody = AddMemeWebCallBody(meme.memekey, newMemegroup, meme.email, meme.s3key)
-          await UpdateMemeGroup(parsedUserToken.id_token, putBody);
-          memes.splice(memes.indexOf(x => x.memekey === meme.memekey), 1);
-          meme.memegroup = newMemegroup;
-          let newMemes = [...memes];
-          newMemes.push(meme);
-          setMemes(newMemes);
-        }
-
-        if(isMemeGroupAndImageChanged(val)) {
-          let putBody = AddMemeWebCallBody(meme.memekey, newMemegroup, meme.email, meme.s3key)
-          await UpdateMemeGroup(parsedUserToken.id_token, putBody);
-
-          await uploadMemeToS3(parsedUserToken.id_token, selectedFile, selectedFile.type, meme.s3key);
-          memes.splice(memes.indexOf(x => x.memekey === meme.memekey), 1);
-          meme.memegroup = newMemegroup;
-          let newMemes = [...memes];
-          newMemes.push(meme);
-          setMemes(newMemes);
-        }
-
-        if(isMemeKeyAndImageChanged(val)) {
-          await uploadMemeToS3(parsedUserToken.id_token, selectedFile, selectedFile.type, meme.s3key);
-
-          await deleteDynamoDBEntry(parsedUserToken.id_token, meme.email, newMemekey);
-          let body = AddMemeWebCallBody(newMemekey, meme.memegroup, meme.email, meme.s3key);
-          await uploadMemeDataToDynamoDB(parsedUserToken.id_token, body); // If present, you would delete and lose all data. Wanna re-insert.
-
-          memes.splice(memes.indexOf(x => x.memekey === meme.memekey), 1);
-
-          let newMemes = [...memes];
-          meme.memekey = newMemekey;
-          newMemes.push(meme);
-          setMemes(newMemes);
-        }
-
-        if(isMemeKeyAndMemeGroupChanged(val)) {
-          await deleteDynamoDBEntry(parsedUserToken.id_token, meme.email, newMemekey);
-
-          let body = AddMemeWebCallBody(newMemekey, newMemegroup, meme.email, meme.s3key);
-          await uploadMemeDataToDynamoDB(parsedUserToken.id_token, body); // If present, you would delete and lose all data. Wanna re-insert.
-
-          memes.splice(memes.indexOf(x => x.memekey === meme.memekey), 1);
-
-          let newMemes = [...memes];
-          meme.memekey = newMemekey;
-          meme.memegroup = newMemegroup;
-          newMemes.push(meme);
-          setMemes(newMemes);
-        }
-
-        if(isMemeKeyAndImageChangedAndMemeGroupChanged(val)) {
-          await uploadMemeToS3(parsedUserToken.id_token, selectedFile, selectedFile.type, meme.s3key);
-
-          await deleteDynamoDBEntry(parsedUserToken.id_token, meme.email, newMemekey);
-  
-          let body = AddMemeWebCallBody(newMemekey, newMemegroup, meme.email, meme.s3key);
-          await uploadMemeDataToDynamoDB(parsedUserToken.id_token, body); // If present, you would delete and lose all data. Wanna re-insert.
-
-          memes.splice(memes.indexOf(x => x.memekey === meme.memekey), 1);
-
-          let newMemes = [...memes];
-          meme.memekey = newMemekey;
-          meme.memegroup = newMemegroup;
-          newMemes.push(meme);
-          setMemes(newMemes);
-
-        }
-        
-        setShowEditModal(false);
+      setShowEditModal(false);
     }
     
     return (<>
