@@ -106,9 +106,8 @@ export const EditMemeModal = ({showEditModal, setShowEditModal, meme, setMemes, 
 
         await uploadMemeToS3(parsedUserToken.id_token, val.file[0], val.file[0].type, meme.s3key);
         memes.splice(memes.indexOf(x => x.memekey === meme.memekey), 1);
-        meme.memegroup = val.memegroup;
-        let newMemes = [...memes];
-        newMemes.push(meme);
+        
+        let newMemes = [...memes];        
         setMemes(newMemes);
       }
 
@@ -136,9 +135,6 @@ export const EditMemeModal = ({showEditModal, setShowEditModal, meme, setMemes, 
         memes.splice(memes.indexOf(x => x.memekey === meme.memekey), 1);
 
         let newMemes = [...memes];
-        meme.memekey = val.memekey;
-        meme.memegroup = val.memegroup;
-        newMemes.push(meme);
         setMemes(newMemes);
       }
 
@@ -153,9 +149,6 @@ export const EditMemeModal = ({showEditModal, setShowEditModal, meme, setMemes, 
         memes.splice(memes.indexOf(x => x.memekey === meme.memekey), 1);
 
         let newMemes = [...memes];
-        meme.memekey = val.memekey;
-        meme.memegroup = val.memegroup;
-        newMemes.push(meme);
         setMemes(newMemes);
 
       }
