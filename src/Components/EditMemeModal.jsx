@@ -83,7 +83,7 @@ export const EditMemeModal = ({showEditModal, setShowEditModal, meme, setMemes, 
         await deleteDynamoDBEntry(parsedUserToken.id_token, meme.email, meme.memekey);
         let body = AddMemeWebCallBody(val.memekey, meme.memegroup, meme.email, meme.s3key);
         await uploadMemeDataToDynamoDB(parsedUserToken.id_token, body); // If present, you would delete and lose all data. Wanna re-insert.
-        memes.splice(memes.indexOf(x => x.memekey === meme.memekey), 1);
+        memes.splice(memes.findIndex(x => x.memekey === meme.memekey), 1);
         let newMemes = [...memes];
         meme.memekey = val.memekey;
         newMemes.push(meme);
@@ -93,10 +93,10 @@ export const EditMemeModal = ({showEditModal, setShowEditModal, meme, setMemes, 
       if(isOnlyMemeGroupChanged(val)) { // Works!
         let putBody = AddMemeWebCallBody(meme.memekey, val.memegroup, meme.email, meme.s3key)
         await UpdateMemeGroup(parsedUserToken.id_token, putBody);
-        memes.splice(memes.indexOf(x => x.memekey === meme.memekey), 1);
-        meme.memegroup = val.memegroup;
+        memes.splice(memes.findIndex(x => x.memekey === meme.memekey), 1);
+        
         let newMemes = [...memes];
-        newMemes.push(meme);
+        
         setMemes(newMemes);
       }
 
@@ -105,7 +105,7 @@ export const EditMemeModal = ({showEditModal, setShowEditModal, meme, setMemes, 
         await UpdateMemeGroup(parsedUserToken.id_token, putBody);
 
         await uploadMemeToS3(parsedUserToken.id_token, val.file[0], val.file[0].type, meme.s3key);
-        memes.splice(memes.indexOf(x => x.memekey === meme.memekey), 1);
+        memes.splice(memes.findIndex(x => x.memekey === meme.memekey), 1);
         
         let newMemes = [...memes];        
         setMemes(newMemes);
@@ -118,7 +118,7 @@ export const EditMemeModal = ({showEditModal, setShowEditModal, meme, setMemes, 
         let body = AddMemeWebCallBody(val.memekey, meme.memegroup, meme.email, meme.s3key);
         await uploadMemeDataToDynamoDB(parsedUserToken.id_token, body); // If present, you would delete and lose all data. Wanna re-insert.
 
-        memes.splice(memes.indexOf(x => x.memekey === meme.memekey), 1);
+        memes.splice(memes.findIndex(x => x.memekey === meme.memekey), 1);
 
         let newMemes = [...memes];
         meme.memekey = val.memekey;
@@ -132,7 +132,7 @@ export const EditMemeModal = ({showEditModal, setShowEditModal, meme, setMemes, 
         let body = AddMemeWebCallBody(val.memekey, val.memegroup, meme.email, meme.s3key);
         await uploadMemeDataToDynamoDB(parsedUserToken.id_token, body); // If present, you would delete and lose all data. Wanna re-insert.
 
-        memes.splice(memes.indexOf(x => x.memekey === meme.memekey), 1);
+        memes.splice(memes.findIndex(x => x.memekey === meme.memekey), 1);
 
         let newMemes = [...memes];
         setMemes(newMemes);
@@ -146,7 +146,7 @@ export const EditMemeModal = ({showEditModal, setShowEditModal, meme, setMemes, 
         let body = AddMemeWebCallBody(val.memekey, val.memegroup, meme.email, meme.s3key);
         await uploadMemeDataToDynamoDB(parsedUserToken.id_token, body); // If present, you would delete and lose all data. Wanna re-insert.
 
-        memes.splice(memes.indexOf(x => x.memekey === meme.memekey), 1);
+        memes.splice(memes.findIndex(x => x.memekey === meme.memekey), 1);
 
         let newMemes = [...memes];
         setMemes(newMemes);
