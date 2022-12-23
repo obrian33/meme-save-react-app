@@ -73,13 +73,13 @@ export const EditMemeModal = ({showEditModal, setShowEditModal, meme, setMemes, 
       let parsedUserToken = getUserToken();
       let val = getValues(); // Need to do full integration test with each function.
 
-      if(isOnlyS3ImageChanged(val)) { // Works!
+      if(isOnlyS3ImageChanged(val)) {
         await uploadMemeToS3(parsedUserToken.id_token, val.file[0], val.file[0].type, meme.s3key);
         let newMemes = [...memes];
         setMemes(newMemes);
       }
 
-      if(isOnlyMemeKeyChanged(val)) { // Works!
+      if(isOnlyMemeKeyChanged(val)) { 
         await deleteDynamoDBEntry(parsedUserToken.id_token, meme.email, meme.memekey);
         let body = AddMemeWebCallBody(val.memekey, meme.memegroup, meme.email, meme.s3key);
         await uploadMemeDataToDynamoDB(parsedUserToken.id_token, body); // If present, you would delete and lose all data. Wanna re-insert.
@@ -90,7 +90,7 @@ export const EditMemeModal = ({showEditModal, setShowEditModal, meme, setMemes, 
         setMemes(newMemes);
       }
 
-      if(isOnlyMemeGroupChanged(val)) { // Works!
+      if(isOnlyMemeGroupChanged(val)) {
         let putBody = AddMemeWebCallBody(meme.memekey, val.memegroup, meme.email, meme.s3key)
         await UpdateMemeGroup(parsedUserToken.id_token, putBody);
         memes.splice(memes.findIndex(x => x.memekey === meme.memekey), 1);
@@ -100,7 +100,7 @@ export const EditMemeModal = ({showEditModal, setShowEditModal, meme, setMemes, 
         setMemes(newMemes);
       }
 
-      if(isMemeGroupAndImageChanged(val)) { // Works! BUT when any group change, it needs to disappear from the group.
+      if(isMemeGroupAndImageChanged(val)) { 
         let putBody = AddMemeWebCallBody(meme.memekey, val.memegroup, meme.email, meme.s3key)
         await UpdateMemeGroup(parsedUserToken.id_token, putBody);
 
@@ -111,7 +111,7 @@ export const EditMemeModal = ({showEditModal, setShowEditModal, meme, setMemes, 
         setMemes(newMemes);
       }
 
-      if(isMemeKeyAndImageChanged(val)) { // Works!
+      if(isMemeKeyAndImageChanged(val)) {
         await uploadMemeToS3(parsedUserToken.id_token, val.file[0], val.file[0].type, meme.s3key);
 
         await deleteDynamoDBEntry(parsedUserToken.id_token, meme.email, meme.memekey);
@@ -126,7 +126,7 @@ export const EditMemeModal = ({showEditModal, setShowEditModal, meme, setMemes, 
         setMemes(newMemes);
       }
 
-      if(isMemeKeyAndMemeGroupChanged(val)) { // Works! When changing groups, you double add it to the prior group.
+      if(isMemeKeyAndMemeGroupChanged(val)) { 
         await deleteDynamoDBEntry(parsedUserToken.id_token, meme.email, meme.memekey);
 
         let body = AddMemeWebCallBody(val.memekey, val.memegroup, meme.email, meme.s3key);
@@ -138,7 +138,7 @@ export const EditMemeModal = ({showEditModal, setShowEditModal, meme, setMemes, 
         setMemes(newMemes);
       }
 
-      if(isMemeKeyAndImageChangedAndMemeGroupChanged(val)) { // Works! When changing groups, you double add it to the prior group.
+      if(isMemeKeyAndImageChangedAndMemeGroupChanged(val)) { 
         await uploadMemeToS3(parsedUserToken.id_token, val.file[0], val.file[0].type, meme.s3key);
 
         await deleteDynamoDBEntry(parsedUserToken.id_token, meme.email, meme.memekey);
